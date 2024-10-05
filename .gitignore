@@ -4,3 +4,5 @@ __pycache__/
 .vscode
 .db/
 instance/
+# Pytest cache
+.pytest_cache/
