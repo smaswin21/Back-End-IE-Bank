@@ -8,6 +8,7 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class LocalConfig(Config):
+    # I mhave to commit the line below and add the dev config here
     SQLALCHEMY_DATABASE_URI = 'sqlite:///local.db' 
     DEBUG = True
 

@@ -29,7 +29,6 @@ def test_create_account(testing_client):
     response = testing_client.post('/accounts', json={'name': 'John Doe', 'currency': '€', 'country' : 'Spain'})
     assert response.status_code == 200
 
-
 def test_update_account(testing_client):
     """
     GIVEN a Flask application
@@ -73,4 +72,3 @@ def test_get_account_by_id(testing_client):
     # Get by ID 
     response = testing_client.get("/accounts/1")
     assert response.status_code == 200
-    
