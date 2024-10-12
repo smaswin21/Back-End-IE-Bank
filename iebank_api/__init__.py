@@ -21,7 +21,12 @@ elif os.getenv('ENV') == 'ghci':
     app.config.from_object('config.GithubCIConfig')
 else:
     print("Running in local mode for now.")
-    app.config.from_object('config.LocalConfig')
+    app.config.from_object('config.ProductionConfig')
+
+
+# Ensure SQLAlchemy is configured with a database URI
+if not app.config.get('SQLALCHEMY_DATABASE_URI'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ie_bank.db')
 
 db = SQLAlchemy(app)
 
