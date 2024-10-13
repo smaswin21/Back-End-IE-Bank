@@ -4,3 +4,7 @@ __pycache__/
 .vscode
 .db/
 instance/
+# Pytest cache
+.pytest_cache/
+# macOS system files
+.DS_Store
