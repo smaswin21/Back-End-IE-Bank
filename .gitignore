@@ -8,4 +8,3 @@ instance/
 .pytest_cache/
 # macOS system files
 .DS_Store
-.coverage
