@@ -1,31 +1,69 @@
 # Cloud Architect Documentation
 
 ## Overview
-Outline the primary responsibilities of the Cloud Architect, including infrastructure design, cloud resource management, and architecture principles.
 
-## Architecture Design
-- **Application Architecture**: Describe architecture components like microservices, containers, and the static frontend.
-- **Infrastructure Design**: Document cloud resources (e.g., App Service, Key Vault, etc.), including configuration details.
-- **Bicep Modules**: List each module used in IaC, linking to code or templates as appropriate.
-- **Environment Configuration**: Describe the DTAP setup and any configuration differences across environments.
+As the Cloud Architect, you are responsible for designing, implementing, and documenting cloud solutions. This includes defining infrastructure, ensuring security, and optimizing performance based on best practices.
 
-## Well-Architected Framework
-- **Reliability**: Document strategies for redundancy, recovery, and failover.
-- **Security**: Outline security practices (IAM, Key Vault, data encryption).
-- **Cost Optimization**: Specify cost-saving measures.
-- **Operational Excellence**: Detail monitoring and logging practices.
-- **Performance Efficiency**: Describe capacity planning and scaling options.
+### Table of Contents
 
-## CI/CD Pipelines
-- **Application Pipeline**: Steps to build and deploy applications.
-- **Infrastructure Pipeline**: Steps for deploying infrastructure using Bicep and GitHub Actions.
-- **Version Control and Branching Strategy**: Explain feature branching and environment deployments.
+- [Architecture Design](#architecture-design)
+- [Infrastructure as Code (IaC)](#infrastructure-as-code-iac)
+- [CI/CD Pipelines](#cicd-pipelines)
+- [Well-Architected Framework](#well-architected-framework)
+- [Monitoring and Observability](#monitoring-and-observability)
+- [Security and Compliance](#security-and-compliance)
 
 ---
 
-### Collaboration and Communication
-- **GitHub Pages Documentation**: Link to Design Document hosted on GitHub Pages.
-- **Slack Integrations**: List any integrations with Slack or other communication tools.
+## Architecture Design
 
-## Reference Links
-- Links to Azure services documentation, Well-Architected Framework, and other resources.
+Describe the architecture design for the project, including:
+- Backend setup with Docker containers.
+- Frontend setup with Azure Static Web Apps.
+- Azure services (App Service, Key Vault, Log Analytics, etc.)
+
+Add diagrams as needed in the `assets` folder.
+
+---
+
+## Infrastructure as Code (IaC)
+
+Document the Bicep or ARM templates used to deploy the infrastructure. Include details like:
+- Modularization approach.
+- Parameters for Development, UAT, and Production environments.
+
+---
+
+## CI/CD Pipelines
+
+Detail the CI/CD pipeline configurations, including:
+- GitHub Actions setup for Infrastructure and Application.
+- Deployment workflows and triggers for each environment.
+
+---
+
+## Well-Architected Framework
+
+Explain how each Well-Architected Framework pillar is addressed in the architecture:
+- **Reliability**
+- **Security**
+- **Cost Optimization**
+- **Operational Excellence**
+- **Performance Efficiency**
+
+---
+
+## Monitoring and Observability
+
+Document the monitoring tools and configurations:
+- Azure Application Insights, Log Analytics setup.
+- Key metrics and alerts for system health.
+
+---
+
+## Security and Compliance
+
+Outline the security best practices:
+- Key Vault configuration for secrets management.
+- IAM roles and permissions.
+- Compliance standards followed.
