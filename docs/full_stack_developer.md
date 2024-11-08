@@ -1,56 +1,36 @@
 # Full Stack Developer Documentation
 
-## Development Environment
-- **Frontend (Vue.js)**: Setup instructions and build process for the Vue.js frontend.
-- **Backend (Docker)**: Setup and Docker configuration for backend services.
+## Overview
 
-## CI/CD Workflows
-- **CI Pipeline**: Steps for testing and building frontend and backend.
-- **CD Pipeline**: Deployment steps to dev, UAT, and prod environments.
+This document outlines the development process for the frontend and backend, including CI/CD strategies, feature branching, and testing practices.
 
-## Code Standards and
-application uptime and performance.
+### Table of Contents
 
----
-
-## Documentation Structure
-
-Each role should maintain and update documentation in their designated file. This structure enables all team members to document their processes, decisions, and implementations systematically.
+- [Frontend Development](#frontend-development)
+- [Backend Development](#backend-development)
+- [CI/CD Pipelines](#cicd-pipelines)
+- [Testing and TDD](#testing-and-tdd)
 
 ---
 
-## Getting Started
+## Frontend Development
 
-1. **Cloning the Repository**: Clone this documentation repository to your local machine.
-    ```bash
-    git clone <repository-url>
-    ```
-
-2. **Folder Structure**:
-    - All documentation files should be stored in the `docs/` folder and organized by role.
-    - Diagrams and images should be stored in the `docs/assets` folder with appropriate subfolders for each role.
-
-3. **Editing and Updating**:
-    - Make updates to the relevant role-based markdown file.
-    - Commit changes with clear and descriptive messages.
-    - Push changes and submit a pull request for review if needed.
+Document the frontend technology stack, structure, and best practices.
 
 ---
 
-## Contributing
+## Backend Development
 
-1. Follow the file structure and guidelines as defined here.
-2. For each update, add a new section with a clear title and date.
-3. Keep language clear and concise to ensure documentation is accessible to all team members.
+Describe the backend setup, including Docker configurations and API development practices.
 
 ---
 
-## Additional Resources
+## CI/CD Pipelines
 
-- [Azure Well-Architected Framework](https://learn.microsoft.com/en-us/azure/well-architected/)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [12-Factor App Methodology](https://12factor.net/)
+Explain the CI/CD setup, feature branch policies, and GitHub Actions workflows.
 
 ---
 
-For any questions or issues, please reach out to the project manager.
+## Testing and TDD
+
+Describe the Test-Driven Development (TDD) strategy, unit tests, and functional testing procedures.
