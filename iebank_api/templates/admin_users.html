@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - User Management</title>
+</head>
+<body>
+    <h1>User Management</h1>
+    
+    <!-- List all users -->
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Admin</th>
+            <th>Actions</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ 'Yes' if user.admin else 'No' }}</td>
+            <td>
+                <form action="{{ url_for('update_user', user_id=user.id) }}" method="post">
+                    <input type="text" name="username" value="{{ user.username }}">
+                    <input type="email" name="email" value="{{ user.email }}">
+                    <label>Admin:</label>
+                    <input type="checkbox" name="admin" {% if user.admin %}checked{% endif %}>
+                    <input type="password" name="password" placeholder="New Password">
+                    <input type="password" name="confirm_password" placeholder="Confirm Password">
+                    <button type="submit">Update</button>
+                </form>
+                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- Form for creating a new user -->
+    <h2>Create New User</h2>
+    <form action="{{ url_for('create_user') }}" method="post">
+        <label>Username:</label>
+        <input type="text" name="username" required>
+        <label>Email:</label>
+        <input type="email" name="email" required>
+        <label>Password:</label>
+        <input type="password" name="password" required>
+        <label>Confirm Password:</label>
+        <input type="password" name="confirm_password" required>
+        <label>Admin:</label>
+        <input type="checkbox" name="admin">
+        <button type="submit">Create User</button>
+    </form>
+</body>
+</html>

@@ -1,6 +1,7 @@
 from iebank_api import db
-from datetime import datetime
-import string, random
+from datetime import datetime, timezone
+import string
+import random
 import enum
 from flask_login import UserMixin
 
@@ -13,14 +14,14 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), nullable=False, unique=True)
     email = db.Column(db.String(64), nullable=False, unique=True)
-    password = db.Column(db.String(64), nullable=False)
+    password = db.Column(db.String(128), nullable=False)  # Increase length for secure hash
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     admin = db.Column(db.Boolean, nullable=False, default=False)
     status = db.Column(db.String(10), nullable=False, default="Active")
     
     # Relationship with Account
     accounts = db.relationship('Account', backref='user', lazy=True)
-    # Relationship with Transaction (backref defined here)
+    # Relationship with Transaction 
     transactions = db.relationship('Transaction', backref='user', lazy=True)
 
     def __repr__(self):
@@ -40,6 +41,9 @@ class User(db.Model, UserMixin):
         self.status = "Inactive"
         return self.status
 
+    def get_id(self):
+        return str(self.id)  # Ensure ID is returned as a string
+
 
 # -------------- BANK ACCOUNT SYSTEM---------------------------------------
 
@@ -48,16 +52,17 @@ class Account(db.Model):
     name = db.Column(db.String(32), nullable=False)
     account_number = db.Column(db.String(20), nullable=False, unique=True)
     balance = db.Column(db.Float, nullable=False, default=0.0)
-    currency = db.Column(db.String(1), nullable=False, default="€")
+    currency = db.Column(db.String(3), nullable=False, default="€")
     country = db.Column(db.String(32), nullable=False)
     status = db.Column(db.String(10), nullable=False, default="Active")
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    
+
+    # Foreign key to User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
+
     def __repr__(self):
         return f'<Account {self.account_number}>'
-    
+  
     def deactivate(self):
         self.status = "Inactive"
         return self.status
@@ -69,6 +74,7 @@ class Account(db.Model):
         self.country = country
         self.balance = 0.0
         self.status = "Active"
+
 
 class TransactionType(enum.Enum):
     DEPOSIT = 'deposit'
@@ -96,15 +102,14 @@ class Transaction(db.Model):
     account = db.relationship('Account', foreign_keys=[account_id], backref='transactions')
     destination_account = db.relationship('Account', foreign_keys=[sent_account_id], backref='received_transactions')
     
-    # Remove any duplicate 'user' relationship or backref definition here
-    
     def __repr__(self):
         return f'<Transaction {self.id}: {self.transaction_type} {self.amount} {self.currency}>'
 
-    def __init__(self, amount, currency, account_id, transaction_type, sent_account_id=None, description=None):
+    def __init__(self, amount, currency, account_id, transaction_type, sent_account_id=None, user_id=None, description=None):
         self.amount = amount
         self.currency = currency
         self.account_id = account_id
         self.transaction_type = transaction_type
         self.sent_account_id = sent_account_id
         self.description = description
+        self.user_id = user_id

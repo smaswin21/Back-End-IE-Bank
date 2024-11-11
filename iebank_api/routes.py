@@ -1,269 +1,303 @@
-""" 
-Routes.py : User, Accounts & Transactions
-"""
-from flask import Flask, request, jsonify, abort, render_template
-from flask_login import login_user, logout_user, login_required, current_user
-from iebank_api import db, app, login_manager
+from flask import Flask, request, jsonify, abort, render_template, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user, LoginManager
+from iebank_api import db, app
 from iebank_api.models import User, Account, Transaction, TransactionType
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from sqlalchemy import or_
+from sqlalchemy.exc import SQLAlchemyError
 
-@app.route('/')
-def hello_world():
-    return render_template('index.html')
 
-# ---------- Admin Access Decorator ----------
-def admin_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        if not current_user.is_admin:
-            return jsonify({'message': 'Admin access required'}), 403
-        return fn(*args, **kwargs)
-    return wrapper
+# -------------- BANK ACCOUNT SYSTEM---------------------------------------
 
-# ---------- User Loader ----------
+
+# -------------- Login Manager --------------------------------------------
+
+
+# Initialize the login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# -------------- Home Route - index.html ----------------------------------
 
-# ---------- Authentication Routes ----------
+# Home route
+@app.route('/')
+def home():
+    return render_template('index.html')
 
-# Register an User
-@app.route('/register', methods=['POST'])
-def register_user():
-    data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
-    password = data.get('password')
-    
-    # Hash the password
-    hashed_password = generate_password_hash(password)
-    
-    # Create new user
-    new_user = User(username=username, email=email, password=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
-    
-    return jsonify({'message': 'User registered successfully'}), 201
+# Utility function to check if user is admin
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.admin:
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return decorated_function
 
-# Login with User
-@app.route('/login', methods=['POST'])
+# -------------- Route for Users ----------------------------------
+
+# Route for user registration
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        try:
+            username = request.form.get('username')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+
+            if User.query.filter_by(email=email).first():
+                flash('An account with this email already exists. Please use a different email or log in.', 'danger')
+                return redirect(url_for('register'))
+
+            if password != confirm_password:
+                flash('Passwords do not match!', 'danger')
+                return redirect(url_for('register'))
+
+            hashed_password = generate_password_hash(password)
+            new_user = User(username=username, email=email, password=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
+            flash('Registration successful. Please log in.', 'success')
+            return redirect(url_for('login'))
+
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash('An error occurred while registering. Please try again.', 'danger')
+            return redirect(url_for('register'))
+
+    return render_template('register.html')
+
+# Route for user login
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    data = request.get_json()
-    print("Data received in login:", data)
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
 
-    email = data.get('email')
-    password = data.get('password')
-    print("Email received:", email)  # Debugging statement
-    print("Password received:", password)  # Debugging statement
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            # Debug statements
+            print("Is Authenticated after login:", current_user.is_authenticated)
+            print("Current User ID after login:", current_user.get_id() if current_user.is_authenticated else "None")
+            
+            flash('Login successful!', 'success')
+            return redirect(url_for('dashboard'))
+        else:
+            flash('Invalid username or password', 'danger')
 
-    # Find user by email
-    user = User.query.filter_by(email=email).first()
-    print("User found:", user)  # Debugging statement
+    return render_template('login.html')
 
-    if user and check_password_hash(user.password, password) and user.status == "Active":
-        login_user(user, remember=True)
-        print("Login successful")  # Debugging statement
-        return jsonify({'message': 'Login successful', 'is_admin': user.admin}), 200
-
-    print("Login failed")  # Debugging statement
-    return jsonify({'message': 'Invalid credentials'}), 401
-
-
-# Logout with User
-@app.route('/logout', methods=['POST'])
+# Route for user logout
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return jsonify({'message': 'Logout successful'}), 200
+    flash('You have been logged out.', 'info')
+    return redirect(url_for('login'))
 
-
-# ---------- Admin User Management Routes ----------
-@app.route('/users', methods=['GET'])
-@admin_required
-def get_users():
-    users = User.query.all()
-    return {'users': [format_user(user) for user in users if user.status == "Active"]}
-
-@app.route('/users', methods=['POST'])
-@admin_required
-def create_user():
-    data = request.json
-    username = data['username']
-    email = data['email']
-    password = generate_password_hash(data['password'])
-    admin = data['admin']
-    
-    new_user = User(username=username, email=email, password=password, admin=admin)
-    db.session.add(new_user)
-    db.session.commit()
-    
-    return jsonify({'message': 'User created successfully'}), 201
-
-@app.route('/users/<int:id>', methods=['PUT'])
-@admin_required
-def update_user(id):
-    user = User.query.get_or_404(id)
-    data = request.json
-    user.username = data.get('username', user.username)
-    user.email = data.get('email', user.email)
-    if 'password' in data:
-        user.password = generate_password_hash(data['password'])
-    user.admin = data.get('admin', user.admin)
-    
-    db.session.commit()
-    return format_user(user), 200
-
-@app.route('/users/<int:id>', methods=['DELETE'])
-@admin_required
-def delete_user(id):
-    user = User.query.get_or_404(id)
-    user.status = "Inactive"
-    db.session.commit()
-    return jsonify({'message': 'User deactivated successfully'}), 204
-
-
-# ---------- Account Management Routes ----------
-
-@app.route('/accounts', methods=['POST'])
+# Route for user dashboard
+@app.route('/dashboard')
 @login_required
-def create_account():
-    data = request.json
-    name = data['name']
-    currency = data['currency']
-    country = data['country']
-    
-    # Create an account associated with the current user
-    account = Account(name=name, currency=currency, country=country, user=current_user)
-    db.session.add(account)
-    db.session.commit()
+def dashboard():
+    # Debug statements
+    print("Is Authenticated in /dashboard:", current_user.is_authenticated)
+    print("Current User ID in /dashboard:", current_user.get_id() if current_user.is_authenticated else "None")
 
-    return format_account(account), 201
+    try:
+        user_accounts = Account.query.filter_by(user_id=current_user.id).all()
+        return render_template('dashboard.html', accounts=user_accounts)
+    except SQLAlchemyError:
+        flash('An error occurred while loading your dashboard.', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/accounts', methods=['GET'])
 @login_required
-def get_accounts():
-    # Admin sees all accounts, users see only their own
-    if current_user.admin:
-        accounts = Account.query.all()
-    else:
-        accounts = current_user.accounts
+def view_accounts():
+    # Debug statements
+    print("Is Authenticated in /accounts:", current_user.is_authenticated)
+    print("Current User ID in /accounts:", current_user.get_id() if current_user.is_authenticated else "None")
 
-    return {'accounts': [format_account(account) for account in accounts if account.status == "Active"]}
+    try:
+        
+        user_accounts = Account.query.filter_by(user_id=current_user.id).all()
+        print(f"The user is {user_accounts}")
+        return render_template('accounts.html', accounts=user_accounts)
+    except SQLAlchemyError:
+        flash('An error occurred while retrieving accounts.', 'danger')
+        return redirect(url_for('dashboard'))
 
-
-@app.route('/accounts/<int:id>', methods=['GET'])
+# Route for initiating a transfer
+@app.route('/transfer', methods=['GET', 'POST'])
 @login_required
-def get_account(id):
-    account = Account.query.get_or_404(id)
-    if account.user_id != current_user.id and not current_user.admin:
-        return jsonify({'message': 'Unauthorized access'}), 403
-    return format_account(account)
+def transfer():
+    if request.method == 'POST':
+        try:
+            from_account_id = request.form.get('from_account_id')
+            to_account_number = request.form.get('to_account_number')
+            amount = float(request.form.get('amount'))
 
-@app.route('/accounts/<int:id>', methods=['PUT'])
+            from_account = Account.query.filter_by(id=from_account_id, user_id=current_user.id).first()
+            print("From Account:", from_account)  # Debugging line
+            to_account = Account.query.filter_by(account_number=to_account_number).first()
+            print("To Account:", to_account)  # Debugging line
+
+            if not from_account or not to_account:
+                flash('Invalid account details.', 'danger')
+                return redirect(url_for('dashboard'))
+
+            if from_account.balance < amount:
+                flash('Insufficient balance.', 'danger')
+                return redirect(url_for('dashboard'))
+
+            from_account.balance -= amount
+            to_account.balance += amount
+
+            transaction = Transaction(
+                amount=amount,
+                currency=from_account.currency,
+                account_id=from_account.id,
+                transaction_type=TransactionType.TRANSFER,
+                sent_account_id=to_account.id,
+                user_id=current_user.id,
+                description=f'Transfer to {to_account_number}'
+            )
+            db.session.add(transaction)
+            db.session.commit()
+            flash('Transfer successful!', 'success')
+            return redirect(url_for('dashboard'))
+
+        except ValueError:
+            flash('Invalid amount entered.', 'danger')
+            return redirect(url_for('transfer'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            print("Error:", e)  # Debugging line
+            flash('An error occurred during the transfer. Please try again.', 'danger')
+            return redirect(url_for('dashboard'))
+
+    try:
+        user_accounts = Account.query.filter_by(user_id=current_user.id).all()
+        print("User Accounts:", user_accounts)  # Debugging line
+        return render_template('transfer.html', accounts=user_accounts)
+    except SQLAlchemyError as e:
+        print("Error:", e)  # Debugging line
+        flash('An error occurred while loading transfer data.', 'danger')
+        return redirect(url_for('dashboard'))
+
+
+# -------------- Route for Admin-Only  -------------------------------------
+
+# Route for the admin dashboard or landing page
+@app.route('/admin')
 @login_required
-def update_account(id):
-    account = Account.query.get_or_404(id)
-    if account.user_id != current_user.id and not current_user.admin:
-        return jsonify({'message': 'Unauthorized access'}), 403
+@admin_required
+def admin_dashboard():
+    return redirect(url_for('list_users'))  
 
-    account.name = request.json.get('name', account.name)
-    db.session.commit()
-    return format_account(account), 200
-
-@app.route('/accounts/<int:id>', methods=['DELETE'])
+# 1. Route for listing all users (admin only)
+@app.route('/admin/users', methods=['GET'])
 @login_required
-def delete_account(id):
-    account = Account.query.get_or_404(id)
-    if account.user_id != current_user.id and not current_user.admin:
-        return jsonify({'message': 'Unauthorized access'}), 403
+@admin_required
+def list_users():
+    try:
+        users = User.query.all()
+        return render_template('admin_users.html', users=users)
+    except SQLAlchemyError:
+        flash('An error occurred while retrieving user data.', 'danger')
+        return redirect(url_for('dashboard'))
 
-    account.status = "Inactive"
-    db.session.commit()
-    return jsonify({'message': 'Account deactivated'}), 204
-
-# ---------- Transfer Money Route ----------
-
-@app.route('/transfer', methods=['POST'])
+# 2. Route for creating a new user (admin only)
+@app.route('/admin/users', methods=['POST'])
 @login_required
-def transfer_money():
+@admin_required
+def create_user():
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+    admin = request.form.get('admin') == 'on'  # Note the change here from is_admin to admin
     
-    data = request.json
+    if password != confirm_password:
+        flash('Passwords do not match!', 'danger')
+        return redirect(url_for('list_users'))
+    
+    hashed_password = generate_password_hash(password)
     
     try:
-        source_account_id = data.get('source_account_id')
-        
-        destination_account_number = data.get('destination_account_number')
-        
-        amount = float(data.get('amount'))
-        
-        # Error Handling
-        source_account = Account.query.get_or_404(source_account_id)
-        destination_account = Account.query.filter_by(account_number=destination_account_number).first()
-        
-        if not destination_account:
-            return jsonify({'message': 'Destination account not found'}), 404
-
-        if source_account.user_id != current_user.id:
-            return jsonify({'message': 'Unauthorized transaction'}), 403
-
-        if source_account.balance < amount:
-            return jsonify({'message': 'Insufficient funds'}), 400
-        
-        # Perform the transfer
-        source_account.balance -= amount
-        destination_account.balance += amount
-
-        # Record transaction
-        transaction = Transaction(
-            amount=amount,
-            currency=source_account.currency,
-            account_id=source_account.id,
-            sent_account_id=destination_account.id,
-            transaction_type=TransactionType.TRANSFER
-        )
-        db.session.add(transaction)
+        # Pass admin instead of is_admin
+        new_user = User(username=username, email=email, password=hashed_password, admin=admin)
+        db.session.add(new_user)
         db.session.commit()
-        
-        return jsonify({'message': f'Transferred {amount} successfully'}), 201
-    except Exception as e:
+        flash('User created successfully!', 'success')
+    except SQLAlchemyError:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        flash('An error occurred while creating the user.', 'danger')
         
-# ---------- Helper Functions ----------------
+    return redirect(url_for('list_users'))
+
+# Route for updating a user (admin only)
+@app.route('/admin/users/<int:user_id>', methods=['POST'])
+@login_required
+@admin_required
+def update_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.username = request.form.get('username', user.username)
+    user.email = request.form.get('email', user.email)
+    user.admin = request.form.get('admin') == 'on'
+    
+    if request.form.get('password'):
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        if password == confirm_password:
+            user.password = generate_password_hash(password)
+        else:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('list_users'))
+
+    try:
+        db.session.commit()
+        flash('User updated successfully!', 'success')
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash('An error occurred while updating the user.', 'danger')
+
+    return redirect(url_for('list_users'))
+    
+# Route for deleting a user (admin only)
+@app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully!', 'success')
+    except SQLAlchemyError:
+        db.session.rollback()
+        flash('An error occurred while deleting the user.', 'danger')
+
+    return redirect(url_for('list_users'))
 
 
-def format_account(account):
-    return {
-        'id': account.id,
-        'name': account.name,
-        'account_number': account.account_number,
-        'balance': account.balance,
-        'currency': account.currency,
-        'country': account.country,
-        'status': account.status,
-        'created_at': account.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'user_id': account.user_id
-    }
+# -------------- Helps me with errors -----------------------------------------
 
-def format_user(user):
-    return {
-        'id': user.id,
-        'username': user.username,
-        'email': user.email,
-        'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'admin': user.admin,
-        'status': user.status
-    }
+# Error handlers
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template('403.html'), 403
 
-def format_transaction(transaction):
-    return {
-        'id': transaction.id,
-        'amount': transaction.amount,
-        'currency': transaction.currency,
-        'created_at': transaction.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-        'account_id': transaction.account_id,
-        'sent_account_id': transaction.sent_account_id
-    }
+@app.errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template('500.html'), 500
+
