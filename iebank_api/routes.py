@@ -84,7 +84,7 @@ def login():
             # Debug statements
             print("Is Authenticated after login:", current_user.is_authenticated)
             print("Current User ID after login:", current_user.get_id() if current_user.is_authenticated else "None")
-            
+
             flash('Login successful!', 'success')
             return redirect(url_for('dashboard'))
         else:
@@ -123,7 +123,7 @@ def view_accounts():
     print("Current User ID in /accounts:", current_user.get_id() if current_user.is_authenticated else "None")
 
     try:
-        
+
         user_accounts = Account.query.filter_by(user_id=current_user.id).all()
         print(f"The user is {user_accounts}")
         return render_template('accounts.html', accounts=user_accounts)
@@ -197,7 +197,7 @@ def transfer():
 @login_required
 @admin_required
 def admin_dashboard():
-    return redirect(url_for('list_users'))  
+    return redirect(url_for('list_users'))
 
 # 1. Route for listing all users (admin only)
 @app.route('/admin/users', methods=['GET'])
@@ -221,13 +221,13 @@ def create_user():
     password = request.form.get('password')
     confirm_password = request.form.get('confirm_password')
     admin = request.form.get('admin') == 'on'  # Note the change here from is_admin to admin
-    
+
     if password != confirm_password:
         flash('Passwords do not match!', 'danger')
         return redirect(url_for('list_users'))
-    
-    hashed_password = generate_password_hash(password)
-    
+
+    hashed_password = generate_password_hash(password) # scrypt:32768:8:1 is the hash type
+
     try:
         # Pass admin instead of is_admin
         new_user = User(username=username, email=email, password=hashed_password, admin=admin)
@@ -237,7 +237,7 @@ def create_user():
     except SQLAlchemyError:
         db.session.rollback()
         flash('An error occurred while creating the user.', 'danger')
-        
+
     return redirect(url_for('list_users'))
 
 # Route for updating a user (admin only)
@@ -249,7 +249,7 @@ def update_user(user_id):
     user.username = request.form.get('username', user.username)
     user.email = request.form.get('email', user.email)
     user.admin = request.form.get('admin') == 'on'
-    
+
     if request.form.get('password'):
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
@@ -267,7 +267,7 @@ def update_user(user_id):
         flash('An error occurred while updating the user.', 'danger')
 
     return redirect(url_for('list_users'))
-    
+
 # Route for deleting a user (admin only)
 @app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @login_required
@@ -300,4 +300,3 @@ def not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     return render_template('500.html'), 500
-
