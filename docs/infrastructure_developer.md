@@ -21,23 +21,7 @@ Unstructured Devlog:
 > I started by looking at what services we are using at this stage and created a separate module for each of them, all the way down to the firewall, after modularizing it it proved to cause an overhead which was resovled by keeping it in our sql database server. All modules are then put together in the main bicep file. Currently modularized services are the Postgressql Server, Postgressql Database, Statkic Web Application.
 > Now the infrastructure has a modularized setup with the following structure.
 
-```plantuml
-@startuml
-skinparam componentStyle rectangle
-skinparam layoutDirection top_down
-
-package "Application Database" {
-    component "SQL Database" as SD
-    package "SQL Server" {
-        component "Firewall Policy" as FP
-    }
-}
-component "Web Application" as WA
-
-"SQL Server" -down-> SD : depends on
-"Application Database" -down-> WA : depends on
-@enduml
-```
+![Dependency Diagram](http://www.plantuml.com/plantuml/png/TP2_QiCm4CRtUuh3UrwWGud1PEgGui5ZkTX7497lX7HfC2NlNbbWAXUo2RwVlZztJ4RHxhE7T7CIADACeyv1XSLwMpnZvD58hfuhnDEYT-lSgZaLD0rVapu48D1ueojZquRWtKX5xiZeGeaR_054_4l0fl_yg6HAs7S5sNmAq7FyvhZz_kTmoYqUv3sUDGSknUHqBkGJdb2H0r-mgbN8eGNOPHpM7OVtt0FVSEB0CYLKWHU3Ddnez_WnFzQp_W80)
 
 ---
 
