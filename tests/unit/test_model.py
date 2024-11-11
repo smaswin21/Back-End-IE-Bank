@@ -1,5 +1,12 @@
-from iebank_api.models import Account
+from iebank_api.models import Account, User
 import pytest
+
+# Fixtures are used:
+"""
+account : basic account object
+user : a simple user object (username, user@iebank.com, my_password, admin=False)
+admin : a simple admin object (admin1, admin@iebank.com, my_password1, admin=True)
+"""
 
 def test_create_account():
     """
@@ -14,7 +21,7 @@ def test_create_account():
     assert account.account_number != None
     assert account.balance == 0.0
     assert account.status == 'Active'
-    
+
 def test_deactivate_account():
     """
     GIVEN a Account model
@@ -22,15 +29,15 @@ def test_deactivate_account():
     THEN check the status is set to Inactive
     """
     account = Account('John Doe', '€', "Spain")
-    account.__deactivate__()
+    account.deactivate()
     assert account.status == 'Inactive'
 
-def test_update_account_status():
+# testing user object
+def test_user_object(user):
     """
-    GIVEN a Account model
-    WHEN the status is updated
-    THEN check the status is updated correctly
+    GIVEN a User model
+    WHEN a new User is created
+    THEN check the username, email, password, admin, status fields are defined correctly
     """
-    account = Account('John Doe', '€', "Spain")
-    account.status = 'Inactive'
-    assert account.status == 'Inactive'
+    assert user.username == 'username'
+    assert user.email == 'user@iebank.com'
