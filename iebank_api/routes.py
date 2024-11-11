@@ -240,7 +240,6 @@ def transfer():
         flash('An error occurred while loading transfer data.', 'danger')
         return redirect(url_for('dashboard'))
 
-
 # -------------- Route for Admin-Only  -------------------------------------
 
 # Route for the admin dashboard or landing page
