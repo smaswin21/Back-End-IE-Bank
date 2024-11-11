@@ -67,13 +67,14 @@ class Account(db.Model):
         self.status = "Inactive"
         return self.status
     
-    def __init__(self, name, currency, country):
+    def __init__(self, name, currency, country, user_id):
         self.name = name
         self.account_number = ''.join(random.choices(string.digits, k=20))
         self.currency = currency
         self.country = country
         self.balance = 0.0
         self.status = "Active"
+        self.user_id = user_id
 
 
 class TransactionType(enum.Enum):
@@ -101,9 +102,9 @@ class Transaction(db.Model):
     # Define relationships
     account = db.relationship('Account', foreign_keys=[account_id], backref='transactions')
     destination_account = db.relationship('Account', foreign_keys=[sent_account_id], backref='received_transactions')
-    
+
     def __repr__(self):
-        return f'<Transaction {self.id}: {self.transaction_type} {self.amount} {self.currency}>'
+        return f'<Transaction {self.id}: {self.transaction_type.value} {self.amount} {self.currency} from Account {self.account_id} to Account {self.sent_account_id}>'
 
     def __init__(self, amount, currency, account_id, transaction_type, sent_account_id=None, user_id=None, description=None):
         self.amount = amount

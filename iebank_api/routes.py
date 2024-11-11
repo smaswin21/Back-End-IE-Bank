@@ -61,6 +61,16 @@ def register():
             new_user = User(username=username, email=email, password=hashed_password)
             db.session.add(new_user)
             db.session.commit()
+
+            # Create a new default account and set user_id after creation
+            new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id)
+            new_account.user_id = new_user.id  # Set user_id explicitly
+            db.session.add(new_account)
+            db.session.commit()
+            
+            accounts = Account.query.all()
+            print("All Accounts in DB after registration:", accounts)
+
             flash('Registration successful. Please log in.', 'success')
             return redirect(url_for('login'))
 
@@ -71,7 +81,8 @@ def register():
 
     return render_template('register.html')
 
-# Route for user login
+# Route for user 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -101,37 +112,71 @@ def logout():
     return redirect(url_for('login'))
 
 # Route for user dashboard
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Debug statements
     print("Is Authenticated in /dashboard:", current_user.is_authenticated)
     print("Current User ID in /dashboard:", current_user.get_id() if current_user.is_authenticated else "None")
-
     try:
+        # Fetch accounts for the current user
         user_accounts = Account.query.filter_by(user_id=current_user.id).all()
-        return render_template('dashboard.html', accounts=user_accounts)
-    except SQLAlchemyError:
+        print(f"User ID: {current_user.id}, User Accounts: {user_accounts}")
+
+        if not user_accounts:
+            flash("No accounts found for this user.", "warning")
+
+        # Fetch transactions where the user is either the sender or recipient
+        user_account_ids = [account.id for account in user_accounts]
+        transactions = Transaction.query.filter(
+            (Transaction.account_id.in_(user_account_ids)) |
+            (Transaction.sent_account_id.in_(user_account_ids))
+        ).order_by(Transaction.created_at.desc()).all()
+
+        return render_template('dashboard.html', accounts=user_accounts, transactions=transactions)
+    
+    except SQLAlchemyError as e:
+        print("Error:", e)
         flash('An error occurred while loading your dashboard.', 'danger')
         return redirect(url_for('login'))
+
 
 @app.route('/accounts', methods=['GET'])
 @login_required
 def view_accounts():
-    # Debug statements
     print("Is Authenticated in /accounts:", current_user.is_authenticated)
     print("Current User ID in /accounts:", current_user.get_id() if current_user.is_authenticated else "None")
 
     try:
-
         user_accounts = Account.query.filter_by(user_id=current_user.id).all()
-        print(f"The user is {user_accounts}")
+        print(f"User ID: {current_user.id}, Fetched Accounts: {user_accounts}")
+
+        if not user_accounts:
+            flash("You have no accounts associated with your profile.", "warning")
+
         return render_template('accounts.html', accounts=user_accounts)
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        print("Error:", e)
         flash('An error occurred while retrieving accounts.', 'danger')
         return redirect(url_for('dashboard'))
 
+# Route for viewing user transactions
+@app.route('/transactions')
+@login_required
+def view_transactions():
+    # Get the IDs of the user's accounts
+    user_account_ids = [account.id for account in current_user.accounts]
+    
+    # Fetch transactions where the user is either the sender or recipient
+    transactions = Transaction.query.filter(
+        (Transaction.account_id.in_(user_account_ids)) | 
+        (Transaction.sent_account_id.in_(user_account_ids))
+    ).order_by(Transaction.created_at.desc()).all()
+    
+    return render_template('transactions.html', transactions=transactions)
+
 # Route for initiating a transfer
+
 @app.route('/transfer', methods=['GET', 'POST'])
 @login_required
 def transfer():
@@ -140,23 +185,29 @@ def transfer():
             from_account_id = request.form.get('from_account_id')
             to_account_number = request.form.get('to_account_number')
             amount = float(request.form.get('amount'))
-
+            
+            # Fetch the accounts involved in the transaction
             from_account = Account.query.filter_by(id=from_account_id, user_id=current_user.id).first()
-            print("From Account:", from_account)  # Debugging line
             to_account = Account.query.filter_by(account_number=to_account_number).first()
-            print("To Account:", to_account)  # Debugging line
+
+            # Debug statements
+            print(f"From Account Query Result: {from_account}")
+            print(f"To Account Query Result: {to_account}")
 
             if not from_account or not to_account:
                 flash('Invalid account details.', 'danger')
-                return redirect(url_for('dashboard'))
+                return redirect(url_for('transfer'))
 
             if from_account.balance < amount:
                 flash('Insufficient balance.', 'danger')
-                return redirect(url_for('dashboard'))
+                return redirect(url_for('transfer'))
 
             from_account.balance -= amount
             to_account.balance += amount
+            
+            db.session.commit()
 
+            # Log the transaction
             transaction = Transaction(
                 amount=amount,
                 currency=from_account.currency,
@@ -193,6 +244,7 @@ def transfer():
 # -------------- Route for Admin-Only  -------------------------------------
 
 # Route for the admin dashboard or landing page
+
 @app.route('/admin')
 @login_required
 @admin_required
