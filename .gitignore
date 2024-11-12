@@ -1,6 +1,5 @@
 .venv/
 __pycache__/
-.env
 .vscode
 .db/
 instance/
@@ -8,3 +7,4 @@ instance/
 .pytest_cache/
 # macOS system files
 .DS_Store
+.env
