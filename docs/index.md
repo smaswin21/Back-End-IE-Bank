@@ -7,14 +7,14 @@ Welcome to the project documentation repository. This documentation is organized
 - [Project Overview](#project-overview)
 - [Roles and Responsibilities](#roles-and-responsibilities)
 - [Documentation Structure](#documentation-structure)
-  - [Cloud Architect](docs/cloud_architect.md)
-  - [Product Owner](docs/product_owner.md)
-  - [Full Stack Developer](docs/full_stack_developer.md)
-  - [Infrastructure Developer](docs/infrastructure_developer.md)
-  - [Cybersecurity Engineer](docs/cybersecurity_engineer.md)
-  - [Site Reliability Engineer (SRE)](docs/sre.md)
-  - [Quality Assurance Engineer (QA)](docs/qa_engineer.md)
-  - [DevOps Engineer](docs/devops_engineer.md)
+  - [Cloud Architect](/cloud_architect.md)
+  - [Product Owner](/product_owner.md)
+  - [Full Stack Developer](/full_stack_developer.md)
+  - [Infrastructure Developer](/infrastructure_developer.md)
+  - [Cybersecurity Engineer](/cybersecurity_engineer.md)
+  - [Site Reliability Engineer (SRE)](/sre.md)
+  - [Quality Assurance Engineer (QA)](/qa_engineer.md)
+  - [DevOps Engineer](/devops_engineer.md)
 
 ---
 
