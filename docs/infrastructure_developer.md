@@ -28,6 +28,7 @@ Unstructured Devlog:
 ## Environment Configurations
 
 Document the parameter files for each environment (Development, UAT, Production) and any unique settings.
+In the end our infrastructure made a decision to continue with using JSON files to specify our parameters for the infrastructure. The choice to do this was a consciuos acknowledgement of potential future migrations and easier interoperabiliyt of a JSON file comapred to the more _vendor locked_ bicep file.
 
 ---
 
@@ -39,6 +40,8 @@ Document the parameter files for each environment (Development, UAT, Production)
 ---
 
 ## Continuous Integration and Continuous Development
+
+> Trying  to use the checkov tool for linting.
 
 ---
 
