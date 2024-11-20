@@ -77,7 +77,7 @@ The IE Bank System has several functional and non-functional requirements that g
 ## 2. Architecture Design
 
 
-## 1. GitHub
+### 1. GitHub
 - **Purpose**:
   - Acts as the central repository for codebase management, versioning, and collaboration.
   - Hosts **Bicep files** for defining infrastructure as code (IaC) templates.
@@ -99,7 +99,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 2. App Service for Containers
+### 2. App Service for Containers
 - **Purpose**:
   - Hosts the backend business logic implemented in Python/Flask within Docker containers.
   - Provides a scalable, serverless environment to run containerized applications.
@@ -118,7 +118,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 3. App Service Plan
+### 3. App Service Plan
 - **Purpose**:
   - Governs the hosting resources for App Services.
   - Provides the underlying compute environment for the Dockerized backend.
@@ -133,7 +133,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 4. PostgreSQL Database
+### 4. PostgreSQL Database
 - **Purpose**:
   - Stores all customer and administrator account information securely.
 
@@ -151,7 +151,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 5. Static Website
+### 5. Static Website
 - **Purpose**:
   - Hosts the Vue.js + HTML frontend as a static website in **Azure Static Web Apps**.
 
@@ -165,7 +165,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 6. Azure Container Registry (ACR)
+### 6. Azure Container Registry (ACR)
 - **Purpose**:
   - Manages versioned Docker images used by the App Service for Containers.
 
@@ -180,7 +180,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 7. Azure Key Vault
+### 7. Azure Key Vault
 - **Purpose**:
   - Centralizes secrets management for all sensitive information across the application.
 
@@ -194,7 +194,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 8. Log Analytics Workspace
+### 8. Log Analytics Workspace
 - **Purpose**:
   - Provides centralized logging and monitoring for all containerized workloads.
 
@@ -208,7 +208,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 9. Application Insights
+### 9. Application Insights
 - **Purpose**:
   - Delivers in-depth performance and usage insights for the application.
 
@@ -222,7 +222,7 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 10. Other Services
+### 10. Other Services
 - **Azure Firewall**:
   - Implements centralized network security by filtering inbound and outbound traffic.
 - **Azure Front Door**:
@@ -232,27 +232,6 @@ The IE Bank System has several functional and non-functional requirements that g
 - **Azure Backup**:
   - Protects critical data with scheduled database backups.
 
----
-
-# Diagram: Infrastructure Overview
-1. **GitHub**:
-   - Hosts Code, CI/CD workflows, and IaC definitions.
-2. **App Services (Containerized Backend)**:
-   - Dockerized business logic.
-3. **PostgreSQL Database**:
-   - Managed data storage.
-4. **Static Web Apps**:
-   - Vue.js frontend hosting.
-5. **Azure Container Registry**:
-   - Docker image management.
-6. **Key Vault**:
-   - Secret management.
-7. **Log Analytics**:
-   - Centralized logging.
-8. **Application Insights**:
-   - Monitoring KPIs.
-
----
 
 
 ---
