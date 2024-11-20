@@ -213,18 +213,6 @@ The IE Bank System has several functional and non-functional requirements that g
      - Provides visualized data for operational decision-making.
 
 
-### 2.10 Other Services
-- **Azure Firewall**:
-  - Implements centralized network security by filtering inbound and outbound traffic.
-- **Azure Front Door**:
-  - Acts as a global load balancer to optimize frontend performance and ensure redundancy.
-- **Azure DevOps**:
-  - Offers pipelines for additional flexibility in CI/CD, alongside GitHub Actions.
-- **Azure Backup**:
-  - Protects critical data with scheduled database backups.
-
-
-
 ---
 
 ## 3. Environment Design
