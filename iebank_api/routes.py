@@ -124,25 +124,29 @@ def logout():
         return jsonify({"error": "Logout failed"}), 500
 
 # Route for creating a new accounts
-@app.route('/create_account', methods=['GET', 'POST'])
+@app.route('/create_account', methods=['POST'])
 @login_required
 def create_account():
-    if request.method == 'POST':
-        try:
-            account_name = request.form.get('account_name')
-            currency = request.form.get('currency')
-            country = request.form.get('country')
-            # Create a new account for the logged-in user
-            new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id)
-            db.session.add(new_account)
-            db.session.commit()
-            flash('New account created successfully.', 'success')
-            return redirect(url_for('dashboard'))
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            flash('An error occurred while creating the account. Please try again.', 'danger')
-            return redirect(url_for('create_account'))
-    return render_template('create_account.html')
+    try:
+        data = request.get_json()  # Parse JSON data
+        account_name = data.get('account_name')
+        currency = data.get('currency')
+        country = data.get('country')
+
+        if not account_name or not currency or not country:
+            return jsonify({"error": "All fields are required"}), 400
+
+        # Create a new account for the logged-in user
+        new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id)
+        db.session.add(new_account)
+        db.session.commit()
+
+        return jsonify({"message": "New account created successfully."}), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print(f"Error creating account: {e}")
+        return jsonify({"error": "An error occurred while creating the account."}), 500
+
 
 # Route for user dashboard
 @app.route('/dashboard', methods=['GET'])
