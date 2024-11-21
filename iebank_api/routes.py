@@ -12,7 +12,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 # -------------- Login Manager --------------------------------------------
 
-
 # Initialize the login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -39,7 +38,8 @@ def admin_required(f):
 
 # -------------- Route for Users ----------------------------------
 
-# Route for user registration
+# Route for user registrationfrom flask import request
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -50,10 +50,12 @@ def register():
             confirm_password = request.form.get('confirm_password')
 
             if User.query.filter_by(email=email).first():
+                app.logger.warning(f'Registration failed: User with email {email} already exists.')
                 flash('An account with this email already exists. Please use a different email or log in.', 'danger')
                 return redirect(url_for('register'))
 
             if password != confirm_password:
+                app.logger.warning(f'Registration failed: Passwords do not match for user {username}.')
                 flash('Passwords do not match!', 'danger')
                 return redirect(url_for('register'))
 
@@ -64,22 +66,49 @@ def register():
 
             # Create a new default account and set user_id after creation
             new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id)
-            new_account.user_id = new_user.id  # Set user_id explicitly
+            new_account.user_id = new_user.id
             db.session.add(new_account)
             db.session.commit()
             
             accounts = Account.query.all()
-            print("All Accounts in DB after registration:", accounts)
+            app.logger.info(f"Registration successful for user {username}. Accounts in DB: {accounts}")
 
             flash('Registration successful. Please log in.', 'success')
             return redirect(url_for('login'))
 
         except SQLAlchemyError as e:
             db.session.rollback()
+            app.logger.error(f'Registration failed due to database error: {e}')
             flash('An error occurred while registering. Please try again.', 'danger')
             return redirect(url_for('register'))
 
     return render_template('register.html')
+
+
+@app.route('/create_account', methods=['GET', 'POST'])
+@login_required
+def create_account():
+    if request.method == 'POST':
+        try:
+            account_name = request.form.get('account_name')
+            currency = request.form.get('currency')
+            country = request.form.get('country')
+
+            # Create a new account for the logged-in user
+            new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id)
+            db.session.add(new_account)
+            db.session.commit()
+
+            flash('New account created successfully.', 'success')
+            return redirect(url_for('dashboard'))
+
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash('An error occurred while creating the account. Please try again.', 'danger')
+            return redirect(url_for('create_account'))
+
+    return render_template('create_account.html')
+
 
 # Route for user 
 

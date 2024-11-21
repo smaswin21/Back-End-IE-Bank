@@ -14,21 +14,27 @@ app = Flask(__name__)
 login_manager = LoginManager()
 
 # Configure the environment based on the ENV variable
-if os.getenv('ENV') == 'local':
+env = os.getenv('ENV', 'local')  
+if env == 'local':
     print("Running in local mode")
     app.config.from_object('config.LocalConfig')
-elif os.getenv('ENV') == 'dev':
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+elif env == 'dev':
     print("Running in development mode")
     app.config.from_object('config.DevelopmentConfig')
-elif os.getenv('ENV') == 'ghci':
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+elif env == 'ghci':
     print("Running in GitHub CI mode")
     app.config.from_object('config.GithubCIConfig')
-elif os.getenv('ENV') == 'uat':
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+elif env == 'uat':
     print("Running in UAT mode")
-    app.config.from_object('config.UATConfig')  
+    app.config.from_object('config.UATConfig')
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
 else:
     print("Running in production, aka local, mode for now!")
     app.config.from_object('config.LocalConfig')
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
 
 if not app.config.get('SQLALCHEMY_DATABASE_URI'):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ie_bank.db')
@@ -64,6 +70,7 @@ appinsights = AppInsights(app)
 
 @app.after_request
 def after_request(response):
+    # Automatically send request telemetry to Azure Application Insights
     appinsights.flush() 
     return response
 
@@ -82,4 +89,3 @@ with app.app_context():
 
 # Import routes to register endpoints
 from iebank_api import routes
-
