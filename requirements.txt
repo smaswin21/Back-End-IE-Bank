@@ -19,3 +19,4 @@ importlib-metadata==8.5.0
 zipp==3.20.2
 applicationinsights==0.11.10
 Flask-Login==0.6.3
+requests==2.32.3

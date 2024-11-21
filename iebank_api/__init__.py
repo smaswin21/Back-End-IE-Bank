@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request  # Added request here
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
@@ -75,6 +75,7 @@ def after_request(response):
         appinsights.flush()
     except Exception as e:
         app.logger.error(f"Error while flushing Application Insights: {e}")
+    # Correct usage of `request`
     app.logger.info(f"{request.method} {request.url} - Status {response.status_code}")
     return response
 
