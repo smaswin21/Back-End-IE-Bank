@@ -11,7 +11,6 @@ from werkzeug.security import generate_password_hash
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
 login_manager = LoginManager()
 
 # Configure the environment based on the ENV variable

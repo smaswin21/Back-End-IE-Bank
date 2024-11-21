@@ -40,46 +40,44 @@ def admin_required(f):
 # -------------- Route for Users ----------------------------------
 
 # Route for user registration
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register():
-    if request.method == 'POST':
-        try:
-            username = request.form.get('username')
-            email = request.form.get('email')
-            password = request.form.get('password')
-            confirm_password = request.form.get('confirm_password')
+    try:
+        # Parse JSON data from the request
+        data = request.get_json()
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
 
-            if User.query.filter_by(email=email).first():
-                flash('An account with this email already exists. Please use a different email or log in.', 'danger')
-                return redirect(url_for('register'))
+        # Validate input data
+        if not username or not email or not password or not confirm_password:
+            return jsonify({"error": "All fields are required."}), 400
 
-            if password != confirm_password:
-                flash('Passwords do not match!', 'danger')
-                return redirect(url_for('register'))
+        if User.query.filter_by(email=email).first():
+            return jsonify({"error": "An account with this email already exists. Please use a different email or log in."}), 400
 
-            hashed_password = generate_password_hash(password)
-            new_user = User(username=username, email=email, password=hashed_password)
-            db.session.add(new_user)
-            db.session.commit()
+        if password != confirm_password:
+            return jsonify({"error": "Passwords do not match."}), 400
 
-            # Create a new default account and set user_id after creation
-            new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id)
-            new_account.user_id = new_user.id  # Set user_id explicitly
-            db.session.add(new_account)
-            db.session.commit()
-            
-            accounts = Account.query.all()
-            print("All Accounts in DB after registration:", accounts)
+        # Create and save the new user
+        hashed_password = generate_password_hash(password)
+        new_user = User(username=username, email=email, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
 
-            flash('Registration successful. Please log in.', 'success')
-            return redirect(url_for('login'))
+        # Create a new default account for the user
+        new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id)
+        db.session.add(new_account)
+        db.session.commit()
 
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            flash('An error occurred while registering. Please try again.', 'danger')
-            return redirect(url_for('register'))
+        return jsonify({"message": "Registration successful! Please log in."}), 201
 
-    return render_template('register.html')
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        print("Error during registration:", e)  # Debugging line
+        return jsonify({"error": "An error occurred while registering. Please try again."}), 500
+    
 
 # Route for user 
 
@@ -125,8 +123,28 @@ def logout():
         print(f"Error during logout: {e}")  # Print any errors
         return jsonify({"error": "Logout failed"}), 500
 
-# Route for user dashboard
+# Route for creating a new accounts
+@app.route('/create_account', methods=['GET', 'POST'])
+@login_required
+def create_account():
+    if request.method == 'POST':
+        try:
+            account_name = request.form.get('account_name')
+            currency = request.form.get('currency')
+            country = request.form.get('country')
+            # Create a new account for the logged-in user
+            new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id)
+            db.session.add(new_account)
+            db.session.commit()
+            flash('New account created successfully.', 'success')
+            return redirect(url_for('dashboard'))
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash('An error occurred while creating the account. Please try again.', 'danger')
+            return redirect(url_for('create_account'))
+    return render_template('create_account.html')
 
+# Route for user dashboard
 @app.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
@@ -199,19 +217,39 @@ def dashboard():
 
 
 # Route for viewing user transactions
-@app.route('/transactions')
+@app.route('/transactions', methods=['GET'])
 @login_required
 def view_transactions():
-    # Get the IDs of the user's accounts
-    user_account_ids = [account.id for account in current_user.accounts]
-    
-    # Fetch transactions where the user is either the sender or recipient
-    transactions = Transaction.query.filter(
-        (Transaction.account_id.in_(user_account_ids)) | 
-        (Transaction.sent_account_id.in_(user_account_ids))
-    ).order_by(Transaction.created_at.desc()).all()
-    
-    return render_template('transactions.html', transactions=transactions)
+    try:
+        # Get the IDs of the user's accounts
+        user_account_ids = [account.id for account in current_user.accounts]
+
+        # Fetch transactions where the user is either the sender or recipient
+        transactions = Transaction.query.filter(
+            (Transaction.account_id.in_(user_account_ids)) |
+            (Transaction.sent_account_id.in_(user_account_ids))
+        ).order_by(Transaction.created_at.desc()).all()
+
+        # Structure the transactions into JSON format
+        transactions_data = [
+            {
+                "id": transaction.id,
+                "created_at": transaction.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                "transaction_type": transaction.transaction_type.value,
+                "account_id": transaction.account_id,
+                "sent_account_id": transaction.sent_account_id,
+                "amount": transaction.amount,
+                "currency": transaction.currency,
+                "description": transaction.description,
+            }
+            for transaction in transactions
+        ]
+
+        return jsonify({"transactions": transactions_data}), 200
+
+    except Exception as e:
+        print(f"Error fetching transactions: {e}")
+        return jsonify({"error": "An error occurred while fetching transactions."}), 500
 
 # Route for initiating a transfer
 
@@ -295,12 +333,14 @@ def list_users():
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "admin": user.admin
+                "admin": user.admin,
+                "accounts": [account.account_number for account in user.accounts]  # Add account numbers
             }
             for user in users
         ]
         return jsonify(users=users_data), 200
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        print(f"Error fetching users: {e}")  # Debugging statement
         return jsonify({"error": "An error occurred while retrieving user data."}), 500
 
 # 2. Route for creating a new user (admin only)
