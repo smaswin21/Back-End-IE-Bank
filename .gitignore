@@ -9,3 +9,4 @@ instance/
 # macOS system files
 .DS_Store
 migrations/
+venv
