@@ -7,6 +7,7 @@ import os
 from flask_login import LoginManager
 from applicationinsights.flask.ext import AppInsights
 from werkzeug.security import generate_password_hash
+import requests
 
 load_dotenv()
 
@@ -18,23 +19,23 @@ env = os.getenv('ENV', 'local')
 if env == 'local':
     print("Running in local mode")
     app.config.from_object('config.LocalConfig')
-    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '76933d03-6c45-4cff-ae5e-bf66b8388b76'
 elif env == 'dev':
     print("Running in development mode")
     app.config.from_object('config.DevelopmentConfig')
-    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '76933d03-6c45-4cff-ae5e-bf66b8388b76'
 elif env == 'ghci':
     print("Running in GitHub CI mode")
     app.config.from_object('config.GithubCIConfig')
-    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '76933d03-6c45-4cff-ae5e-bf66b8388b76'
 elif env == 'uat':
     print("Running in UAT mode")
     app.config.from_object('config.UATConfig')
-    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '76933d03-6c45-4cff-ae5e-bf66b8388b76'
 else:
     print("Running in production, aka local, mode for now!")
     app.config.from_object('config.LocalConfig')
-    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = 'a4b6380f-bde6-44bb-8417-22e90f2a3f08'
+    app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = '76933d03-6c45-4cff-ae5e-bf66b8388b76'
 
 if not app.config.get('SQLALCHEMY_DATABASE_URI'):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ie_bank.db')
@@ -48,7 +49,7 @@ migrate = Migrate(app, db)
 login_manager.init_app(app)
 
 # Set the login view and messages
-login_manager.login_view = 'login'  # Ensure this matches the route in routes.py
+login_manager.login_view = 'login'  
 login_manager.login_message = "Please log in to access this page."
 login_manager.login_message_category = "info"
 
@@ -63,15 +64,18 @@ def unauthorized():
     return jsonify({"error": "Unauthorized", "message": "Authentication required"}), 401
 
 # Enable Cross-Origin Resource Sharing (CORS)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "https://your-production-domain.com"}})
 
 # Application Insights configuration
 appinsights = AppInsights(app)
 
 @app.after_request
 def after_request(response):
-    # Automatically send request telemetry to Azure Application Insights
-    appinsights.flush() 
+    try:
+        appinsights.flush()
+    except Exception as e:
+        app.logger.error(f"Error while flushing Application Insights: {e}")
+    app.logger.info(f"{request.method} {request.url} - Status {response.status_code}")
     return response
 
 # Import models to register them with SQLAlchemy
@@ -86,6 +90,7 @@ with app.app_context():
         admin = User("admin", "admin@example.com", generate_password_hash("admin_password"), True)
         db.session.add(admin)
         db.session.commit()
-
+        print("Admin user created.")
+        
 # Import routes to register endpoints
 from iebank_api import routes
