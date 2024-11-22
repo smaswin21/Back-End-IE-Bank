@@ -67,12 +67,12 @@ class Account(db.Model):
         self.status = "Inactive"
         return self.status
     
-    def __init__(self, name, currency, country, user_id):
+    def __init__(self, name, currency, country, user_id, balance=0.0):
         self.name = name
         self.account_number = ''.join(random.choices(string.digits, k=20))
         self.currency = currency
         self.country = country
-        self.balance = 0.0
+        self.balance = balance
         self.status = "Active"
         self.user_id = user_id
 

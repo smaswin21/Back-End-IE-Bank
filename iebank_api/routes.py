@@ -49,6 +49,7 @@ def register():
         email = data.get('email')
         password = data.get('password')
         confirm_password = data.get('confirm_password')
+        initial_balance = float(data.get('initial_balance', 0.0))
 
         # Validate input data
         if not username or not email or not password or not confirm_password:
@@ -67,7 +68,7 @@ def register():
         db.session.commit()
 
         # Create a new default account for the user
-        new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id)
+        new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id, balance=initial_balance)
         db.session.add(new_account)
         db.session.commit()
 
@@ -128,20 +129,34 @@ def logout():
 @login_required
 def create_account():
     try:
-        data = request.get_json()  # Parse JSON data
+        data = request.get_json()
         account_name = data.get('account_name')
         currency = data.get('currency')
         country = data.get('country')
+        initial_balance = float(data.get('initial_balance'))  # Default to 0.0
 
-        if not account_name or not currency or not country:
+        print(account_name, currency, country, initial_balance)  # Debugging line
+        if not account_name or not currency or not country or not initial_balance:
             return jsonify({"error": "All fields are required"}), 400
 
-        # Create a new account for the logged-in user
-        new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id)
+        # Ensure initial_balance is valid
+        if initial_balance < 0:
+            return jsonify({"error": "Initial balance cannot be negative"}), 400
+
+        # Create the account
+        new_account = Account(
+            name=account_name,
+            currency=currency,
+            country=country,
+            user_id=current_user.id,
+            balance=initial_balance
+        )
         db.session.add(new_account)
         db.session.commit()
 
         return jsonify({"message": "New account created successfully."}), 201
+    except ValueError:
+        return jsonify({"error": "Invalid initial balance"}), 400
     except SQLAlchemyError as e:
         db.session.rollback()
         print(f"Error creating account: {e}")
