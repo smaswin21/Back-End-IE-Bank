@@ -1,18 +1,17 @@
 import pytest
 from iebank_api import app, db
-from iebank_api.models import User, Account
+from iebank_api.models import User, Account, Transaction, TransactionType
 from werkzeug.security import generate_password_hash
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def test_client():
     """
-    Fixture to set up the Flask test client with an in-memory SQLite database.
+    Set up a Flask test client with an in-memory SQLite database.
     """
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    app.config['WTF_CSRF_ENABLED'] = False
-    app.config['DEBUG'] = False
+    app.config["TESTING"] = True
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    app.config["WTF_CSRF_ENABLED"] = False
 
     with app.test_client() as testing_client:
         with app.app_context():
@@ -23,16 +22,27 @@ def test_client():
             db.drop_all()
 
 
+@pytest.fixture(scope="function", autouse=True)
+def clear_database():
+    """
+    Clears the database before each test to avoid duplicate entries.
+    """
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
+
+
 @pytest.fixture
 def new_user():
     """
-    Fixture to create and persist a new user in the database.
+    Create and return a new test user in the database.
     """
     with app.app_context():
         user = User(
             username="test_user",
             email="test_user@example.com",
-            password=generate_password_hash("password123")
+            password=generate_password_hash("password123"),
         )
         db.session.add(user)
         db.session.commit()
@@ -42,7 +52,7 @@ def new_user():
 @pytest.fixture
 def new_account(new_user):
     """
-    Fixture to create and persist a new account for the test user in the database.
+    Create and return a new test account linked to the test user.
     """
     with app.app_context():
         account = Account(
@@ -50,7 +60,7 @@ def new_account(new_user):
             currency="USD",
             country="USA",
             user_id=new_user.id,
-            balance=1000.0
+            balance=500.0,
         )
         db.session.add(account)
         db.session.commit()
@@ -58,43 +68,19 @@ def new_account(new_user):
 
 
 @pytest.fixture
-def admin_user():
+def new_transaction(new_account):
     """
-    Fixture to create and persist an admin user in the database.
-    """
-    with app.app_context():
-        admin = User(
-            username="admin_user",
-            email="admin_user@example.com",
-            password=generate_password_hash("admin123"),
-            admin=True
-        )
-        db.session.add(admin)
-        db.session.commit()
-        return admin
-
-@pytest.fixture
-def login_user(test_client, new_user):
-    """
-    Log in the user and set session.
-    """
-    with test_client:
-        test_client.post('/login', data={
-            'username': new_user.username,
-            'password': 'password123'  # Ensure this matches the test user's password
-        })
-
-@pytest.fixture
-def new_user():
-    """
-    Create and persist a new test user.
+    Create and return a test transaction associated with the test account.
     """
     with app.app_context():
-        user = User(
-            username="test_user",
-            email="test_user@example.com",
-            password=generate_password_hash("password123")
+        transaction = Transaction(
+            amount=100.0,
+            currency="USD",
+            account_id=new_account.id,
+            transaction_type=TransactionType.DEPOSIT,
+            user_id=new_account.user_id,
+            description="Test deposit transaction",
         )
-        db.session.add(user)
+        db.session.add(transaction)
         db.session.commit()
-        return user
+        return transaction
