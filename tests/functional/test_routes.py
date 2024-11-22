@@ -1,7 +1,6 @@
 from iebank_api import app
 import pytest
 
-
 def test_register(testing_client, user):
     """
     GIVEN a User model

@@ -83,7 +83,6 @@ def register():
 
     return render_template('register.html')
 
-
 @app.route('/create_account', methods=['GET', 'POST'])
 @login_required
 def create_account():
