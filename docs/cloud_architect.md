@@ -76,6 +76,8 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ## 2. Architecture Design
 
+![image](https://github.com/user-attachments/assets/2bb5cedf-bd9e-4ae2-b043-217a19f421b8)
+
 
 ### 2.1 GitHub
 - **Purpose**:
