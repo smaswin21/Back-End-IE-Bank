@@ -47,6 +47,7 @@ def register():
             email = request.form.get('email')
             password = request.form.get('password')
             confirm_password = request.form.get('confirm_password')
+            initial_balance = float(request.form.get('initial_balance', 0.0))
 
             if User.query.filter_by(email=email).first():
                 app.logger.warning(f'Registration failed: User with email {email} already exists.')
@@ -63,9 +64,8 @@ def register():
             db.session.add(new_user)
             db.session.commit()
 
-            # Create a new default account and set user_id after creation
-            new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id)
-            new_account.user_id = new_user.id
+            # Create a new default account with the user-provided balance
+            new_account = Account(name="Default Account", currency="EUR", country="Spain", user_id=new_user.id, balance=initial_balance)
             db.session.add(new_account)
             db.session.commit()
             
@@ -92,9 +92,10 @@ def create_account():
             account_name = request.form.get('account_name')
             currency = request.form.get('currency')
             country = request.form.get('country')
+            initial_balance = float(request.form.get('initial_balance', 0.0))
 
-            # Create a new account for the logged-in user
-            new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id)
+            # Create a new account for the logged-in user with the provided initial balance
+            new_account = Account(name=account_name, currency=currency, country=country, user_id=current_user.id, balance=initial_balance)
             db.session.add(new_account)
             db.session.commit()
 
