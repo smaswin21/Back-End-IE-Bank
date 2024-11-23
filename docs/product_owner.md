@@ -32,7 +32,7 @@ IE Bank is a platform that aims to deliver accessible, reliable and secure banki
 
 ## Product Vision Board
 
-![Product Vision Board](https://github.com/smaswin21/Back-End-IE-Bank/blob/docsfolder/images/Product-Vision-Board-Extended%20(dragged).png)
+![Product Vision Board](images/Product-Vision-Board-Extended%20(dragged).png)
 
 ---
 
