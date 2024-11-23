@@ -25,3 +25,4 @@ gunicorn
 opentelemetry-sdk
 azure-monitor-opentelemetry
 opentelemetry-exporter-azure-monitor
+azure-monitor-opentelemetry-exporter
