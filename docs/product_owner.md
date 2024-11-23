@@ -46,12 +46,14 @@ The following are the features that the business analysts wants to implement in 
 
 ## FUNCTIONAL REQUIREMENTS
 ### Admin Portal - Bank users management system
-    This allows bank administrators to access, manage and control users’ accounts. Through this portal, the admins can view, create, update and delete bank users’ accounts. This consist of the following main features
+
+This allows bank administrators to access, manage and control users’ accounts. Through this portal, the admins can view, create, update and delete bank users’ accounts. This consist of the following main features
 1. Administrators accounts will have a default username and password. Once these credentials are used and login is successful, the admins can access users’ management portals.
 2. Once logged in to a users’ portal, the administrator can list, create, update and delete bank users and their passwords.
 
 ### User Portal - Bank account management system
-    This allows users to access their account management portals, and allows them to have more than one bank account to be associated with their user profile. This consists of the following features:
+
+This allows users to access their account management portals, and allows them to have more than one bank account to be associated with their user profile. This consists of the following features:
 1. New users can register on IE back by filling out a form containing their username, password and confirming their password. When a new user is registered, a new account will be provided by default, with a random account number
 2. Users can log in to the application using their username and password, and once login is successful, they can only view their own bank accounts and transactions (the information related to their account only)
 3. Users can perform transactions, primarily transferring money to their existing account, which can be found in the account management portal. This is done by entering the recipient’s account number and amount to be transferred. 
@@ -61,9 +63,12 @@ The following are the features that the business analysts wants to implement in 
 ### Basic authentication
 1. The application must implement a basic user or admin authentication system that requires the user or admin to enter their username and password to log in and access their respective accounts successfully
 2. Authentication needs to remain simple, as the business analysts of IE bank do not expect the usage of complex authentication methods, such as biometrics, tokens or OAuth, at this time
+
 ### Security compliance 
 1. Apply encryption to user credentials and store these credentials securely in a database by hashing the passwords.
-2. Ensures users’ sensitive information is stored securely  
+2. Ensures users’ sensitive information is stored securely
+
+
 ### Simple user interface 
 1. The user interface must focus on ensuring that all functionalities and requirements are satisfied and executed successfully, with minimal focus on the aesthetic aspects of the frontend 
 
@@ -73,10 +78,14 @@ The following are the features that the business analysts wants to implement in 
 2. Having a definitive backlog prepared by the product owner that is updated continuously throughout each sprint 
 3. Cloud architect must take the initial design decisions early on in the process
 4. Conduct daily scrum meetings to keep each other updated and ensure everyone is on track
-5. Sprint reviews and sprint retrospectives to show the stakeholders the progress so far and receive constructive criticism. 
+5. Sprint reviews and sprint retrospectives to show the stakeholders the progress so far and receive constructive criticism.
+
+
 ### Test-driven Development 
 1. Tests developed for every function, using unit and function tests, to ensure that the new and old features have a strong foundation and function as intended
 2. Testing after every new development to recognize bugs early on and fix them before it’s too late
+
+
 ### CI/CD Strategy
 1. Using feature branching for new code developments, where each feature branch has a name representative of the new code being developed. 
 2. Pushes to feature branches must trigger automated deployments to the DEV environment 
@@ -89,6 +98,7 @@ The following are the features that the business analysts wants to implement in 
 ## Objective and Key Results (OKRs)
 
 **Objective 1:** Deliver a functioning Minimum Viable Product 
+
 **Key results:**
 1. Develop and deploy admin portal by using the CRUD functionalities, so that it can be used for user management
 2. Implement a secure user registration system which generates random account numbers for each user
@@ -97,6 +107,7 @@ The following are the features that the business analysts wants to implement in 
 5. Conduct 2 rounds of UAT deployments and ensure both rounds have a 100% success rate and has zero defects
 
 **Objective 2:** Implement a CI/CD pipeline 
+
 **Key results:**
 1. Automate deployments to Development, UAT and Production environments with 0 manual intervention by 4/12/2024
 2. Setup GitHub Actions workflow by adding the necessary branching strategies to enable the automatic triggers for tests and deployments within one sprint
@@ -104,7 +115,8 @@ The following are the features that the business analysts wants to implement in 
 4. Ensure a success rate of 90% for all deployments and necessary automation tests across all environments by the end of the sprint
 5. Implement Azure monitoring tools to ensure that deployments are continuously successful and occur within approximately 10 minutes of initiation.
 
-**Objective 3: Improve System Security**
+**Objective 3:** Improve System Security
+
 **Key results:**
 1. Implement secure password hashing for 100% of admin and user credentials 
 2. Deploy Azure Key Vault to securely manage environment secrets for all three environments (Dev, UAT, Prod) by 4/12/2024
@@ -113,6 +125,7 @@ The following are the features that the business analysts wants to implement in 
 5. Conduct 2 iterations of security framework implementations, choosing 5 guides from OpenSSF and 5 practices from SAFECode, ensuring all the controls are integrated into the application by 4/12/2024 
 
 **Objective 4:** Improve Performance and Reliability 
+
 **Key results:**
 1. Achieve up to 99% availability of the application in the production environment by 4/12/2024
 2. Define and monitor 5 Service Level Indicators (SLIs) to measure system health so that 100% of the SLIs are tracked on Azure Monitor
@@ -121,6 +134,7 @@ The following are the features that the business analysts wants to implement in 
 5. Optimize the database queries such that the average response time is reduced 20% across all endpoints by the end of the sprint.
 
 **Objective 5:** Adopt and Foster an Agile and Collaborative Team Practice
+
 **Key Results:**
 1. Host Scrum meetings at least twice a week to focus on tracking each team member’s progress, roadblocks and future tasks
 2. Document 15 user stores with the appropriate acceptance criteria for each member
