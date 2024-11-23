@@ -6,6 +6,7 @@ load_dotenv()
 class Config(object):
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    APPINSIGHTS_CONNECTION_STRING = os.getenv('APPINSIGHTS_CONNECTION_STRING')  # Get the full Application Insights connection string from the environment
 
 class LocalConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///local.db'
@@ -17,10 +18,10 @@ class GithubCIConfig(Config):
 
 class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'postgresql://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
-    dbuser=os.getenv('DBUSER'),
-    dbpass=os.getenv('DBPASS'),
-    dbhost=os.getenv('DBHOST'),
-    dbname=os.getenv('DBNAME')
+        dbuser=os.getenv('DBUSER'),
+        dbpass=os.getenv('DBPASS'),
+        dbhost=os.getenv('DBHOST'),
+        dbname=os.getenv('DBNAME')
     )
     DEBUG = True
 

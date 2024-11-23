@@ -22,3 +22,6 @@ Flask-Login==0.6.3
 requests==2.32.3
 azure-identity==1.19.0
 gunicorn
+opentelemetry-sdk
+azure-monitor-opentelemetry
+opentelemetry-exporter-azure-monitor
