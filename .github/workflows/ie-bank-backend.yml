@@ -92,6 +92,20 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Get docker registry credentials from Azure Key Vault (UAT)
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            echo "REGISTRY_USERNAME_UAT=$(az keyvault secret show --name acr-username --vault-name money404-kv-uat --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD_UAT=$(az keyvault secret show --name acr-password0 --vault-name money404-kv-uat --query value -o tsv)" >> $GITHUB_ENV
+
+      - name: Log in to Azure Container Registry (UAT)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}
+          username: ${{ env.REGISTRY_USERNAME_UAT }}
+          password: ${{ env.REGISTRY_PASSWORD_UAT }}
+
       - name: Deploy to Azure Web App - UAT
         uses: azure/webapps-deploy@v3
         with:
