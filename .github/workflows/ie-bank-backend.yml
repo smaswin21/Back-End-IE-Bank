@@ -34,14 +34,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
+      - name: Assign Key Vault Reader Role
+        run: |
+          az role assignment create --assignee ${{ secrets.CLIENT_ID }} \
+            --role "Key Vault Secrets User" \
+            --scope /subscriptions/${{ env.SUBSCRIPTION_ID_DEV }}/resourceGroups/bcsai2024-devops-students-b-dev/providers/Microsoft.KeyVault/vaults/money404-kv-dev
+
       - name: Get docker registry credentials from Azure Key Vault
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            REGISTRY_USERNAME_DEV=$(az keyvault secret show --name keyVaultSecretNameAdminUsername --vault-name money404-kv-dev --query value -o tsv)
-            REGISTRY_PASSWORD_DEV=$(az keyvault secret show --name keyVaultSecretNameAdminPassword0 --vault-name money404-kv-dev --query value -o tsv)
-            echo "REGISTRY_USERNAME_DEV=$REGISTRY_USERNAME_DEV" >> $GITHUB_ENV
-            echo "REGISTRY_PASSWORD_DEV=$REGISTRY_PASSWORD_DEV" >> $GITHUB_ENV
+        run: |
+          REGISTRY_USERNAME_DEV=$(az keyvault secret show --name keyVaultSecretNameAdminUsername --vault-name money404-kv-dev --query value -o tsv)
+          REGISTRY_PASSWORD_DEV=$(az keyvault secret show --name keyVaultSecretNameAdminPassword0 --vault-name money404-kv-dev --query value -o tsv)
+          echo "REGISTRY_USERNAME_DEV=$REGISTRY_USERNAME_DEV" >> $GITHUB_ENV
+          echo "REGISTRY_PASSWORD_DEV=$REGISTRY_PASSWORD_DEV" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -94,14 +98,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Assign Key Vault Reader Role (UAT)
+        run: |
+          az role assignment create --assignee ${{ secrets.CLIENT_ID }} \
+            --role "Key Vault Secrets User" \
+            --scope /subscriptions/${{ env.SUBSCRIPTION_ID_DEV }}/resourceGroups/bcsai2024-devops-students-b-dev/providers/Microsoft.KeyVault/vaults/money404-kv-uat
+
       - name: Get docker registry credentials from Azure Key Vault (UAT)
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            REGISTRY_USERNAME_UAT=$(az keyvault secret show --name keyVaultSecretNameAdminUsername --vault-name money404-kv-uat --query value -o tsv)
-            REGISTRY_PASSWORD_UAT=$(az keyvault secret show --name keyVaultSecretNameAdminPassword0 --vault-name money404-kv-uat --query value -o tsv)
-            echo "REGISTRY_USERNAME_UAT=$REGISTRY_USERNAME_UAT" >> $GITHUB_ENV
-            echo "REGISTRY_PASSWORD_UAT=$REGISTRY_PASSWORD_UAT" >> $GITHUB_ENV
+        run: |
+          REGISTRY_USERNAME_UAT=$(az keyvault secret show --name keyVaultSecretNameAdminUsername --vault-name money404-kv-uat --query value -o tsv)
+          REGISTRY_PASSWORD_UAT=$(az keyvault secret show --name keyVaultSecretNameAdminPassword0 --vault-name money404-kv-uat --query value -o tsv)
+          echo "REGISTRY_USERNAME_UAT=$REGISTRY_USERNAME_UAT" >> $GITHUB_ENV
+          echo "REGISTRY_PASSWORD_UAT=$REGISTRY_PASSWORD_UAT" >> $GITHUB_ENV
 
       - name: Log in to Azure Container Registry (UAT)
         uses: azure/docker-login@v2
