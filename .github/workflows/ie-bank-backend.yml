@@ -34,6 +34,14 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
+      - name: Assign Key Vault Permissions
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az role assignment create --assignee ${{ secrets.AZURE_CLIENT_ID }} \
+              --role "Key Vault Secrets User" \
+              --scope /subscriptions/${{ env.SUBSCRIPTION_ID_DEV }}/resourceGroups/bcsai2024-devops-students-b-dev/providers/Microsoft.KeyVault/vaults/money404-kv-dev
+
       - name: Get docker registry credentials from Azure Key Vault
         uses: azure/CLI@v1
         with:
@@ -50,8 +58,8 @@ jobs:
         uses: azure/docker-login@v2
         with:
           login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}
-          username: \$\{\{ REGISTRY_USERNAME_DEV \}\}
-          password: \$\{\{ REGISTRY_PASSWORD_DEV \}\}
+          username: ${{ REGISTRY_USERNAME_DEV }}
+          password: ${{ REGISTRY_PASSWORD_DEV }}
 
       - name: Build Docker image (Dev)
         run: |
@@ -94,6 +102,14 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Assign Key Vault Permissions (UAT)
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az role assignment create --assignee ${{ secrets.AZURE_CLIENT_ID }} \
+              --role "Key Vault Secrets User" \
+              --scope /subscriptions/${{ env.SUBSCRIPTION_ID_DEV }}/resourceGroups/bcsai2024-devops-students-b-dev/providers/Microsoft.KeyVault/vaults/money404-kv-uat
+
       - name: Get docker registry credentials from Azure Key Vault (UAT)
         uses: azure/CLI@v1
         with:
@@ -107,8 +123,8 @@ jobs:
         uses: azure/docker-login@v2
         with:
           login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}
-          username: \$\{\{ REGISTRY_USERNAME_UAT \}\}
-          password: \$\{\{ REGISTRY_PASSWORD_UAT \}\}
+          username: ${{ REGISTRY_USERNAME_UAT }}
+          password: ${{ REGISTRY_PASSWORD_UAT }}
 
       - name: Deploy to Azure Web App - UAT
         uses: azure/webapps-deploy@v3
