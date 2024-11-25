@@ -17,7 +17,7 @@ def test_register_route(test_client):
     """
     response = test_client.post(
         "/register",
-        data={
+        json={  # Use JSON instead of form data
             "username": "new_user",
             "email": "new_user@example.com",
             "password": "password123",
