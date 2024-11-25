@@ -3,10 +3,10 @@ name: ie-bank-backend
 on:
   # Trigger build and deploy on any push, except the main branch
   push:
-    branches-ignore: [ "main" ]
+    branches-ignore: ["main"]
   # Trigger workflow on Pull Request against the main branch
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   # Allow manual workflow dispatch
   workflow_dispatch:
 
@@ -62,7 +62,7 @@ jobs:
 
   deploy-dev:
     # Deploy to any branch other than main on a push, or to main on PR merge
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     needs: build
     environment:
