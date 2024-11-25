@@ -1,0 +1,88 @@
+name: ie-bank-backend
+
+on:
+  # Trigger build and deploy on any push, except the main branch
+  push:
+    branches-ignore: [ "main" ]
+  # Trigger workflow on Pull Request against the main branch
+  pull_request:
+    branches: [ "main" ]
+  # Allow manual workflow dispatch
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  # Backend apps
+  BACKEND_WEBAPP_DEV: money404-be-dev
+  BACKEND_WEBAPP_UAT: money404-be-uat
+  # Container registry details
+  DOCKER_REGISTRY_SERVER_URL_DEV: money404acrdev.azurecr.io
+  DOCKER_REGISTRY_SERVER_URL_UAT: money404acruat.azurecr.io
+  IMAGE_NAME_DEV: money404-be-dev
+  IMAGE_NAME_UAT: money404-be-uat
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Azure Container Registry (Dev)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}
+          username: ${{ secrets.REGISTRY_USERNAME_DEV }}
+          password: ${{ secrets.REGISTRY_PASSWORD_DEV }}
+
+      - name: Build Docker image (Dev)
+        run: |
+          docker build -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }} .
+
+      - name: Push Docker image to Azure Container Registry (Dev)
+        run: |
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }}
+
+  deploy-dev:
+    # Deploy to any branch other than main on a push, or to main on PR merge
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Development'
+
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App - Dev
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: ${{ env.BACKEND_WEBAPP_DEV }}
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }}
+
+  deploy-uat:
+    # Deploy to UAT if there is a push to main (after a PR merge)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'UAT'
+
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App - UAT
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.BACKEND_WEBAPP_UAT }}
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ github.sha }}
