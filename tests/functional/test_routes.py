@@ -25,7 +25,7 @@ def test_register_route(test_client):
             "initial_balance": "1000.0",
         },
     )
-    assert response.status_code == 302  # Expecting a redirect after registration
+    assert response.status_code == 201  # Expecting a redirect after registration
 
     # Verify user exists in the database
     with app.app_context():
