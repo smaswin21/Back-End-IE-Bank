@@ -11,91 +11,89 @@ permissions:
   id-token: write
 
 env:
+  # Backend apps
   BACKEND_WEBAPP_DEV: money404-be-dev
-  BACKEND_WEBAPP_UAT: money404-be-uat  # Added UAT backend web app
+  BACKEND_WEBAPP_UAT: money404-be-uat
+  # Container registry details
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
-  USER_ALIAS: money404
+  DOCKER_REGISTRY_SERVER_URL_DEV: money404acrdev.azurecr.io
+  DOCKER_REGISTRY_SERVER_URL_UAT: money404acruat.azurecr.io
+  IMAGE_NAME_DEV: money404-be-dev
+  IMAGE_NAME_UAT: money404-be-uat
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       ENV: ghci
-
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v3
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
         with:
-          python-version: "3.11"
-      - name: Upgrade pip
-        run: |
-          python -m pip install --upgrade pip
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-      - name: Lint with flake8
-        run: |
-          pip install flake8 pytest
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with pytest
-        run: |
-          python -m pytest --cov=iebank_api -v
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get docker registry credentials from Azure Key Vault
+        uses: azure/CLI@v1
         with:
-          name: python-app
-          path: .
+          inlineScript: |
+            echo "REGISTRY_USERNAME_DEV=$(az keyvault secret show --name acr-username --vault-name money404-kv-dev --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD_DEV=$(az keyvault secret show --name acr-password0 --vault-name money404-kv-dev --query value -o tsv)" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Azure Container Registry (Dev)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}
+          username: ${{ env.REGISTRY_USERNAME_DEV }}
+          password: ${{ env.REGISTRY_PASSWORD_DEV }}
+
+      - name: Build Docker image (Dev)
+        run: |
+          docker build -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }} .
+
+      - name: Push Docker image to Azure Container Registry (Dev)
+        run: |
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }}
 
   deploy-dev:
+    # Deploy to any branch other than main on a push, or to main on PR merge
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Development'
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-          path: .
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
+      - name: Deploy to Azure Web App - Dev
+        uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-          package: .
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }}
 
   deploy-uat:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # Deploy to UAT if there is a push to main (after a PR merge)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'    
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'UAT'
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-          path: .
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Web App - UAT'
-        uses: azure/webapps-deploy@v2
+      - name: Deploy to Azure Web App - UAT
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
-          package: .
-
-
-
-          
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ github.sha }}
