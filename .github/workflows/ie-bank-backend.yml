@@ -18,6 +18,7 @@ env:
   IMAGE_NAME: money404-be-dev
   KEY_VAULT_SECRET_NAME_ACR_USERNAME: acr-username
   KEY_VAULT_SECRET_NAME_ACR_PASSWORD: acr-password0
+  KEY_VAULT_NAME: money404-kv-dev
 
 jobs:
   build:
