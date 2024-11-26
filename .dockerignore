@@ -1,7 +1,0 @@
-**/__pycache__
-**/.venv
-**/.pytest_cache
-.coverage
-.env
-node_modules
-dist

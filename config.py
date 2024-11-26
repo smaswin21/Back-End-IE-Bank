@@ -9,7 +9,7 @@ class Config(object):
     SECRET_KEY = 'this-really-needs-to-be-changed'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     APPINSIGHTS_CONNECTION_STRING = os.getenv('APPINSIGHTS_CONNECTION_STRING')  # Get the full Application Insights connection string from the environment
-
+    APPINSIGHTS_INSTRUMENTATIONKEY = os.getenv('APPINSIGHTS_INSTRUMENTATIONKEY')  # Get the Instrumentation Key from the environment
 class LocalConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///local.db'
     DEBUG = True
