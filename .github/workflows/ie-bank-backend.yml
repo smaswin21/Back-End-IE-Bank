@@ -20,53 +20,71 @@ env:
   DOCKER_REGISTRY_SERVER_URL_UAT: money404acruat.azurecr.io
   IMAGE_NAME_DEV: money404-be-dev
   IMAGE_NAME_UAT: money404-be-uat
+  KEY_VAULT_SECRET_NAME_ACR_USERNAME: acr-username
+  KEY_VAULT_SECRET_NAME_ACR_PASSWORD: acr-password0
+  KEY_VAULT_NAME_DEV: money404-kv-dev
+  KEY_VAULT_NAME_UAT: money404-kv-uat
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ENV: ghci
+    outputs:
+      image-version: ${{ steps.image-version.outputs.version }}
+
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8 pytest
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Test with pytest
+        run: python -m pytest --cov=iebank_api -v
 
       - name: Login via Azure CLI
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
-      - name: Assign Key Vault Reader Role
-        run: |
-          az role assignment create --assignee "${{ secrets.CLIENT_ID }}" \
-            --role "Key Vault Secrets User" \
-            --scope /subscriptions/${{ env.SUBSCRIPTION_ID_DEV }}/resourceGroups/bcsai2024-devops-students-b-dev/providers/Microsoft.KeyVault/vaults/money404-kv-dev
 
-      - name: Get docker registry credentials from Azure Key Vault
-        run: |
-          REGISTRY_USERNAME_DEV=$(az keyvault secret show --name keyVaultSecretNameAdminUsername --vault-name money404-kv-dev --query value -o tsv)
-          REGISTRY_PASSWORD_DEV=$(az keyvault secret show --name keyVaultSecretNameAdminPassword0 --vault-name money404-kv-dev --query value -o tsv)
-          echo "REGISTRY_USERNAME_DEV=$REGISTRY_USERNAME_DEV" >> $GITHUB_ENV
-          echo "REGISTRY_PASSWORD_DEV=$REGISTRY_PASSWORD_DEV" >> $GITHUB_ENV
+      - name: Get Docker registry credentials from Azure Key Vault
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to Azure Container Registry (Dev)
+      - name: Login to Docker Registry
         uses: azure/docker-login@v2
         with:
           login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}
-          username: ${{ env.REGISTRY_USERNAME_DEV }}
-          password: ${{ env.REGISTRY_PASSWORD_DEV }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
-      - name: Build Docker image (Dev)
-        run: |
-          docker build -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }} .
+      - name: Set image version
+        id: image-version
+        run: echo "version=$(date +'%Y.%m.%d.%H.%M')" >> $GITHUB_OUTPUT
 
-      - name: Push Docker image to Azure Container Registry (Dev)
+      - name: Build and push image
         run: |
-          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:latest
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.image-version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:latest
 
   deploy-dev:
-    # Deploy to any branch other than main on a push, or to main on PR merge
     if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     needs: build
@@ -80,14 +98,12 @@ jobs:
 
       - name: Deploy to Azure Web App - Dev
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ github.sha }}
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build.outputs.image-version }}
 
   deploy-uat:
-    # Deploy to UAT if there is a push to main (after a PR merge)
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'    
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: build
     environment:
@@ -98,28 +114,22 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Assign Key Vault Reader Role (UAT)
-        run: |
-          az role assignment create --assignee "${{ secrets.CLIENT_ID }}" \
-            --role "Key Vault Secrets User" \
-            --scope /subscriptions/${{ env.SUBSCRIPTION_ID_DEV }}/resourceGroups/bcsai2024-devops-students-b-dev/providers/Microsoft.KeyVault/vaults/money404-kv-uat
+      - name: Get Docker registry credentials from Azure Key Vault (UAT)
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
 
-      - name: Get docker registry credentials from Azure Key Vault (UAT)
-        run: |
-          REGISTRY_USERNAME_UAT=$(az keyvault secret show --name keyVaultSecretNameAdminUsername --vault-name money404-kv-uat --query value -o tsv)
-          REGISTRY_PASSWORD_UAT=$(az keyvault secret show --name keyVaultSecretNameAdminPassword0 --vault-name money404-kv-uat --query value -o tsv)
-          echo "REGISTRY_USERNAME_UAT=$REGISTRY_USERNAME_UAT" >> $GITHUB_ENV
-          echo "REGISTRY_PASSWORD_UAT=$REGISTRY_PASSWORD_UAT" >> $GITHUB_ENV
-
-      - name: Log in to Azure Container Registry (UAT)
+      - name: Login to Docker Registry (UAT)
         uses: azure/docker-login@v2
         with:
           login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}
-          username: ${{ env.REGISTRY_USERNAME_UAT }}
-          password: ${{ env.REGISTRY_PASSWORD_UAT }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Deploy to Azure Web App - UAT
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
-          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ github.sha }}
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ needs.build.outputs.image-version }}
