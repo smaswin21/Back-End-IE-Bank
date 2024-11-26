@@ -27,7 +27,7 @@ elif os.getenv('ENV') == 'uat':
     app.config.from_object('config.UATConfig')  
 else:
     print("Running in production mode")
-    app.config.from_object('config.ProductionConfig')
+    app.config.from_object('config.LocalConfig')
 
 # Ensure SQLAlchemy is configured with a database URI
 if not app.config.get('SQLALCHEMY_DATABASE_URI'):
