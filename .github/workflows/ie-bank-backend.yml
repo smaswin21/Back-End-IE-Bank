@@ -11,8 +11,8 @@ permissions:
   id-token: write
 
 env:
-  BACKEND_WEBAPP_DEV: aswin-be-dev
-  BACKEND_WEBAPP_UAT: aswin-be-uat
+  BACKEND_WEBAPP_DEV: money404-be-dev
+  BACKEND_WEBAPP_UAT: money404-be-uat
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
   DOCKER_REGISTRY_SERVER_URL: money404acrdev.azurecr.io  # Replace with your ACR login server
   IMAGE_NAME: money404-be-dev
