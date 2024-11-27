@@ -97,7 +97,13 @@ from iebank_api.models import Account, User, TransactionType, Transaction
 with app.app_context():
     db.create_all()
     # Create an admin user if none exists
-    admin = User.query.filter_by(username="admin").first()
+    # list all users in the database
+    users = User.query.all()
+    admin = None
+    for user in users:
+        if user.admin:
+            admin = user
+            break
     if not admin:
         admin = User("admin", "admin@example.com", generate_password_hash("admin_password"), True)
         db.session.add(admin)
