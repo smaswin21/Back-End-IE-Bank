@@ -1,0 +1,50 @@
+<!-- templates/transactions.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Transactions</title>
+</head>
+<body>
+    <h1>Your Transactions</h1>
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>From Account</th>
+            <th>To Account</th>
+            <th>Amount</th>
+            <th>Description</th>
+        </tr>
+        {% for transaction in transactions %}
+        <tr>
+            <td>{{ transaction.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ transaction.transaction_type.value }}</td>
+            <td>
+                {% if transaction.account %}
+                    {{ transaction.account.account_number }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if transaction.destination_account %}
+                    {{ transaction.destination_account.account_number }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+            <td>{{ transaction.description or 'No description' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="6">No transactions found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </p>
+</body>
+</html>

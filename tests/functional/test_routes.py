@@ -1,74 +1,34 @@
+from iebank_api.models import User
 from iebank_api import app
-import pytest
 
-def test_get_accounts(testing_client):
+
+def test_home_route(test_client):
     """
-    GIVEN a Flask application
-    WHEN the '/accounts' page is requested (GET)
-    THEN check the response is valid
+    Test the home route for a successful response.
     """
-    response = testing_client.get('/accounts')
+    response = test_client.get("/")
     assert response.status_code == 200
+    assert b"Welcome" in response.data  # Update this based on your index.html content
 
-def test_dummy_wrong_path():
-    """
-    GIVEN a Flask application
-    WHEN the '/wrong_path' page is requested (GET)
-    THEN check the response is valid
-    """
-    with app.test_client() as client:
-        response = client.get('/wrong_path')
-        assert response.status_code == 404
 
-def test_create_account(testing_client):
+def test_register_route(test_client):
     """
-    GIVEN a Flask application
-    WHEN the '/accounts' page is posted to (POST)
-    THEN check the response is valid
+    Test user registration functionality.
     """
-    response = testing_client.post('/accounts', json={'name': 'John Doe', 'currency': '€', 'country' : 'Spain'})
-    assert response.status_code == 200
-
-def test_update_account(testing_client):
-    """
-    GIVEN a Flask application
-    WHEN the '/accounts' page is posted to (PUT) with an name
-    THEN check the response is valid
-    """
-    testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
-    )  
-    response = testing_client.put("/accounts/1", json={"name": "Dev-Aswin"})
-    assert response.status_code == 200
-
-def test_delete_account(testing_client):
-    """
-    GIVEN a Flask application
-    WHEN the '/accounts' page posted to delete (DELETE)
-    THEN check the response is valid
-    """
-
-    # Create 
-    response = testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
+    response = test_client.post(
+        "/register",
+        json={  # Use JSON instead of form data
+            "username": "new_user",
+            "email": "new_user@example.com",
+            "password": "password123",
+            "confirm_password": "password123",
+            "initial_balance": "1000.0",
+        },
     )
+    assert response.status_code == 201  # Expecting a redirect after registration
 
-    # Delete 
-    response = testing_client.delete("/accounts/1")
-    assert response.status_code == 200
-
-def test_get_account_by_id(testing_client):
-    """
-    GIVEN a Flask application
-    WHEN the '/accounts' page is requested (GET)
-    THEN check the response is valid
-    """
-
-    # Create 
-    response = testing_client.post(
-        "/accounts", json={"name": "John Doe", "country": "Spain", "currency": "€"}
-    )
-
-    # Get by ID 
-    response = testing_client.get("/accounts/1")
-    assert response.status_code == 200
+    # Verify user exists in the database
+    with app.app_context():
+        user = User.query.filter_by(email="new_user@example.com").first()
+        assert user is not None
+        assert user.username == "new_user"

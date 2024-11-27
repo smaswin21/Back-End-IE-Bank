@@ -11,21 +11,24 @@ permissions:
   id-token: write
 
 env:
+  # Backend apps
   BACKEND_WEBAPP_DEV: money404-be-dev
   BACKEND_WEBAPP_UAT: money404-be-uat
+  # Container registry details
   SUBSCRIPTION_ID_DEV: e0b9cada-61bc-4b5a-bd7a-52c606726b3b
-  DOCKER_REGISTRY_SERVER_URL: money404acrdev.azurecr.io  # Replace with your ACR login server
-  IMAGE_NAME: money404-be-dev
+  DOCKER_REGISTRY_SERVER_URL_DEV: money404acrdev.azurecr.io
+  DOCKER_REGISTRY_SERVER_URL_UAT: money404acruat.azurecr.io
+  IMAGE_NAME_DEV: money404-be-dev
+  IMAGE_NAME_UAT: money404-be-uat
   KEY_VAULT_SECRET_NAME_ACR_USERNAME: acr-username
   KEY_VAULT_SECRET_NAME_ACR_PASSWORD: acr-password0
-  KEY_VAULT_NAME: money404-kv-dev
+  KEY_VAULT_NAME_DEV: money404-kv-dev
+  KEY_VAULT_NAME_UAT: money404-kv-uat
+  MANAGED_ID_KEYVAULT_KEY: backend-api-app-service-identity
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ENV: ghci
-
     outputs:
       image-version: ${{ steps.image-version.outputs.version }}
 
@@ -57,17 +60,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Get docker registry credentials from Azure Key Vault
+      - name: Get Docker registry credentials from Azure Key Vault
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
-            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
 
       - name: Login to Docker Registry
         uses: azure/docker-login@v2
         with:
-          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL }}
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
@@ -77,61 +81,58 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
-          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ steps.image-version.outputs.version }}
-          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: .
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:latest
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.image-version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:latest
 
   deploy-dev:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Development'
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-          path: .
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App - Dev
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
-          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-version }}"
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build.outputs.image-version }}
 
   deploy-uat:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'UAT'
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-          path: .
-
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Web App - UAT'
-        uses: azure/webapps-deploy@v2
+      - name: Get Docker registry credentials from Azure Key Vault (UAT)
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+
+      - name: Login to Docker Registry (UAT)
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Deploy to Azure Web App - UAT
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.BACKEND_WEBAPP_UAT }}
-          images: "${{ env.DOCKER_REGISTRY_SERVER_URL }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image-version }}"
+          images: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ needs.build.outputs.image-version }}

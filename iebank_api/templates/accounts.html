@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Accounts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>User Accounts</h1>
+    {% if accounts %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Account Name</th>
+                    <th>Account Number</th>
+                    <th>Balance</th>
+                    <th>Currency</th>
+                    <th>Country</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                    <tr>
+                        <td>{{ account.name }}</td>
+                        <td>{{ account.account_number }}</td>
+                        <td>{{ account.balance }}</td>
+                        <td>{{ account.currency }}</td>
+                        <td>{{ account.country }}</td>
+                        <td>{{ account.status }}</td>
+                        <td>{{ account.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No accounts found.</p>
+    {% endif %}
+
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

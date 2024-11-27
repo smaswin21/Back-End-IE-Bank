@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ current_user.username }}</h1>
+    
+    <h2>Your Accounts</h2>
+    <ul>
+        {% if accounts %}
+            {% for account in accounts %}
+                <li>{{ account.name }} - {{ account.account_number }} | Balance: {{ account.balance }} {{ account.currency }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No accounts available.</li>
+        {% endif %}
+    </ul>
+
+    <h2>Your Transactions</h2>
+    <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>From Account</th>
+            <th>To Account</th>
+            <th>Amount</th>
+            <th>Description</th>
+        </tr>
+        {% if transactions %}
+            {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.created_at }}</td>
+                    <td>{{ transaction.transaction_type.value }}</td>
+                    <td>{{ transaction.account_id }}</td>
+                    <td>{{ transaction.sent_account_id }}</td>
+                    <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+                    <td>{{ transaction.description }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="6">No transactions found.</td>
+            </tr>
+        {% endif %}
+    </table>
+
+    <a href="{{ url_for('transfer') }}">Transfer Money</a> |
+    <a href="{{ url_for('logout') }}">Logout</a>
+</body>
+</html>
