@@ -14,7 +14,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), nullable=False, unique=True)
     email = db.Column(db.String(64), nullable=False, unique=True)
-    password = db.Column(db.String(128), nullable=False)  # Increase length for secure hash
+    password = db.Column(db.String(512), nullable=False)  # Increase length for secure hash
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     admin = db.Column(db.Boolean, nullable=False, default=False)
     status = db.Column(db.String(10), nullable=False, default="Active")
