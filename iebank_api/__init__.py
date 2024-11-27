@@ -39,7 +39,7 @@ else:
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'aswin')
 
 # Application Insights Configuration using Connection String
-connection_string = os.getenv("APPINSIGHTS_CONNECTION_STRING")
+connection_string = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
 if connection_string:
     print("Configuring Azure Monitor", connection_string)
     configure_azure_monitor(connection_string=connection_string)
