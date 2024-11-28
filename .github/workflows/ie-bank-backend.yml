@@ -107,8 +107,8 @@ jobs:
           images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build.outputs.image-version }}
 
   build-uat:
-    # https://github.com/orgs/community/discussions/27154
-    if: github.event_name == 'push' && github.event.pull_request.base.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    # https://github.com/orgs/community/discussions/27154 github.event.pull_request.base.ref == 'refs/heads/main'
+    if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'refs/heads/main' || github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     #if: always()
     runs-on: ubuntu-latest
     outputs:
