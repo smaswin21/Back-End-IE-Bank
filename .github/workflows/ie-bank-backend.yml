@@ -37,7 +37,14 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Debug GitHub context
-        run: echo "Event name: ${{ github.event_name }}, Ref: ${{ github.ref }}, Base Ref: ${{ github.base_ref }}"
+        run: |
+          echo "Event name: ${GITHUB_EVENT_NAME}"
+          echo "Ref: ${GITHUB_REF}"
+          echo "Base Ref: ${GITHUB_BASE_REF}"
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
         with:
