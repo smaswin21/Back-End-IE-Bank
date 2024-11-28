@@ -213,3 +213,44 @@ Joint Orchestration
     - location: Deployment location.
     - containerRegistryName: Name of the Azure Container Registry.
     - appServiceAppName, appServiceAPIAppName: Names of the frontend and backend services.
+
+
+### Static Web App Deployment
+
+Static Web Apps are an excellent way to host front-end applications (HTML, CSS, Vue, etc.) at a significantly lower cost. They provide a simple and efficient solution for hosting static content.
+
+#### Initial Approach: Using Online Modules
+
+Initially, we explored using an Azure-provided online module (`module staticWebApp 'br/public:avm/res/web/static-site:0.3.0'`) for deploying the Static Web App. However, this approach introduced several challenges:
+
+- **Complexity**: Incorporating the module into our Bicep folder structure was cumbersome.
+- **Dependency**: It tied us to an external template, making future modifications or customizations more difficult.
+
+#### Final Approach: Local Template Hosting
+
+To overcome these limitations, we decided to host the template locally. We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our Static Web App. This allowed us to streamline the deployment process and fully control the template's behavior.
+
+You can find the code for the custom module here:
+[**frontend-app-service.bicep**](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep).
+
+## Deployment Process
+
+We followed Azure's official documentation to integrate the Static Web App into our structure. Here's how we set it up:
+
+1. **Parameterization**:
+   - We defined key parameters for deployment, including:
+     - **Static Web App Name**: e.g., `money404-dev-swa`, `money404-uat-swa`, `money404-prod-swa`.
+     - **SKU**: Free, Standard, etc.
+     - **Location**: e.g., West Europe.
+
+   These values are stored in environment-specific parameter files (e.g., `dev.parameters.json`) to ensure flexibility across environments.
+
+2. **Module Integration**:
+   In the `main.bicep` file, we call the `frontend-app-service.bicep` module and pass the required parameters. This ensures the Static Web App is deployed consistently across environments.
+
+3. **Frontend Configuration**:
+   After deploying the Static Web App, we pass its token to the front-end application. This token ensures that the front-end is hosted in the correct Static Web App instance.
+
+---
+
+By hosting the template locally and integrating it into our existing Bicep structure, we simplified the deployment process while maintaining full control over the configuration.
