@@ -167,8 +167,7 @@ class DevelopmentConfig(Config):
 > - [Deploy to App Service using GitHub Actions](https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=userlevel#python-1)
 > - [Deploying Python to Azure App Service](https://docs.github.com/en/actions/deployment/deploying-to-your-cloud-provider/deploying-to-azure/deploying-python-to-azure-app-service)
 
-The file [`.github/workflows/ie-bank-backend.yml`](.github\workflows\ie-bank-backend.yml) contains the configuration for the CI/CD pipeline
-
+The file [`.github/workflows/ie-bank-backend.yml`](.github\workflows\ie-bank-backend.yml) contains the configuration for the CI/CD pipeline. The deployment workflow now builds for either UAT or development environments based on the `ENV` environment variable.
 
 ### GitHub secrets
 
@@ -177,3 +176,12 @@ The workflow uses the following GitHub secrets:
 Secret name | Description | Learn more
 --- | --- | ---
 `AZURE_CREDENTIALS` | Azure credentials to authenticate to Azure via Service Principal | [Use the Azure login action with a service principal secret](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#use-the-azure-login-action-with-a-service-principal-secret)
+
+### ENV Environment Variable
+
+The `ENV` environment variable is used to determine the target environment for the build and deployment process. It can have the following values:
+
+- `local`: For local development
+- `dev`: For development environment
+- `uat`: For UAT (User Acceptance Testing) environment
+- `ghci`: For GitHub CI environment

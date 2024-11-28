@@ -64,14 +64,20 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
-            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
-            echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+            if [ "${{ env.ENV }}" == "dev" ]; then
+              echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+              echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+              echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+            elif [ "${{ env.ENV }}" == "uat" ]; then
+              echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+              echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+              echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+            fi
 
       - name: Login to Docker Registry
         uses: azure/docker-login@v2
         with:
-          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}
+          login-server: ${{ env.ENV == 'dev' && env.DOCKER_REGISTRY_SERVER_URL_DEV || env.DOCKER_REGISTRY_SERVER_URL_UAT }}
           username: ${{ env.REGISTRY_USERNAME }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
@@ -81,13 +87,13 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.image-version.outputs.version }}
-          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:latest
-          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ steps.image-version.outputs.version }}
-          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:latest
+          docker build . -t ${{ env.ENV == 'dev' && env.DOCKER_REGISTRY_SERVER_URL_DEV || env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.ENV == 'dev' && env.IMAGE_NAME_DEV || env.IMAGE_NAME_UAT }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.ENV == 'dev' && env.DOCKER_REGISTRY_SERVER_URL_DEV || env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.ENV == 'dev' && env.IMAGE_NAME_DEV || env.IMAGE_NAME_UAT }}:latest
+          docker push ${{ env.ENV == 'dev' && env.DOCKER_REGISTRY_SERVER_URL_DEV || env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.ENV == 'dev' && env.IMAGE_NAME_DEV || env.IMAGE_NAME_UAT }}:${{ steps.image-version.outputs.version }}
+          docker push ${{ env.ENV == 'dev' && env.DOCKER_REGISTRY_SERVER_URL_DEV || env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.ENV == 'dev' && env.IMAGE_NAME_DEV || env.IMAGE_NAME_UAT }}:latest
 
   deploy-dev:
-    if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main') && env.ENV == 'dev'
     runs-on: ubuntu-latest
     needs: build
     environment:
@@ -105,7 +111,7 @@ jobs:
           images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build.outputs.image-version }}
 
   deploy-uat:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' && env.ENV == 'uat'
     runs-on: ubuntu-latest
     needs: build
     environment:
