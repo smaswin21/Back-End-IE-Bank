@@ -54,3 +54,72 @@
 6. **Logging and Auditing**:  
    Comprehensive logging and auditing practices were established to track user actions, authentication attempts, and system changes. Regular reviews of these logs support proactive detection of unusual activities, enhancing both security and compliance efforts.
 
+
+---
+
+## Operational Excellence Pillar
+
+
+Operational Excellence focuses on ensuring efficient and reliable operations by streamlining processes, automating repetitive tasks, and fostering robust monitoring and logging practices. This section outlines the design decisions made to enhance operational capabilities for both frontend and backend components.
+
+---
+
+### Frontend Design Decisions
+
+1. **Environment Configuration Updates**
+- Updated `.env.development` and `.env.uat` files to reflect new development and UAT URLs, ensuring environment-specific configurations are correctly applied.
+- Modified `.github/workflows/ie-bank-frontend.yml` to reflect new frontend web app names for development and UAT.
+
+2. **Monitoring and Logging**
+- Integrated `@microsoft/applicationinsights-web` to log key frontend events such as page loads, user login/logout, and admin activities.
+- Dynamically retrieve Application Insights connection strings from Azure to streamline configuration management.
+
+3. **UI Enhancements and Role-Based Adjustments**
+- Updated the application UI to dynamically adjust components and views based on user roles (User vs. Admin).
+- Created new Vue.js components (`HomePage`, `Dashboard`, `AdminPortal`, and `UserList`) to ensure streamlined workflows for different user types, enhancing operational clarity.
+
+4. **Error Handling and Notifications**
+- Implemented a global Axios service to handle API errors (e.g., 401, 403, 404, 500) and prevent duplicate error alerts with a global flag (`isErrorShown`).
+
+---
+
+### Backend Design Decisions
+
+1. **Configuration and Monitoring**
+- Configured `APPINSIGHTS_CONNECTION_STRING` in `config.py` for seamless integration with Application Insights.
+- Used `FlaskInstrumentor` from OpenTelemetry to log key application events, ensuring traceability of user actions and system events.
+
+2. **Enhanced Data Models**
+- Updated the `User` model to include attributes for user status and secure ID handling.
+- Enhanced the `Account` model with unique account numbers, balances, and foreign key relationships to ensure data integrity.
+- Improved the `Transaction` model to support deposits, withdrawals, and transfers, with metadata for better traceability.
+
+3. **Routing Enhancements**
+- Developed user-specific routes for account management (e.g., `register`, `login`, `dashboard`) and admin-specific routes (e.g., `list_users`, `create_user`).
+- Introduced error-handling routes (`forbidden`, `not_found`, `server_error`) to streamline error management and ensure a consistent user experience.
+
+4. **Authentication and Authorization**
+- Enforced role-based access controls to ensure users access only permitted functionality.
+- Redirected unauthorized users to the login page with relevant error messages for clarity.
+
+#### HTML Template Updates
+- Created separate HTML templates for local testing, enabling easier debugging and operational testing for both user and admin interfaces.
+
+---
+
+### Key Operational Practices
+
+1. **Automation and CI/CD**
+- Leveraged GitHub workflows to automate environment-specific deployments and testing, ensuring reliable and predictable operations.
+
+2. **Logging and Observability**
+- Centralized logging of key frontend and backend events using Application Insights for improved operational insights and error tracking.
+
+3. **Error Mitigation**
+- Implemented robust error handling across all layers (frontend Axios service, backend error routes) to mitigate operational disruptions and enhance user satisfaction.
+
+---
+
+This framework ensures streamlined operations, efficient debugging, and enhanced observability for IE Bank's digital banking application.
+
+
