@@ -108,8 +108,8 @@ jobs:
 
   build-uat:
     # https://github.com/orgs/community/discussions/27154 github.event.pull_request.base.ref == 'refs/heads/main'
-    if: github.event.pull_request.base.ref == 'main' || github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    #if: always()
+    #if: github.event.pull_request.base.ref == 'main' || github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: always()
     runs-on: ubuntu-latest
     outputs:
       image-version: ${{ steps.image-version.outputs.version }}
@@ -122,10 +122,12 @@ jobs:
           echo "Event name: ${GITHUB_EVENT_NAME}"
           echo "Ref: ${GITHUB_REF}"
           echo "Base Ref: ${GITHUB_BASE_REF}"
+          echo "PR Base Ref: ${GITHUB_PR_BASE_REF}"
         env:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
         with:
