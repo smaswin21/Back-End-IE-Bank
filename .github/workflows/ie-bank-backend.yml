@@ -4,6 +4,7 @@ on:
   push:
   pull_request:
     branches: [ "main" ]
+    types: [ "opened", "synchronize", "reopened", "closed" , "edited" ]
   workflow_dispatch:
 
 permissions:
@@ -27,7 +28,8 @@ env:
   MANAGED_ID_KEYVAULT_KEY: backend-api-app-service-identity
 
 jobs:
-  build:
+  build-dev:
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     outputs:
       image-version: ${{ steps.image-version.outputs.version }}
@@ -89,7 +91,7 @@ jobs:
   deploy-dev:
     if: github.event_name == 'push' && github.ref != 'refs/heads/main' || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main')
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-dev
     environment:
       name: 'Development'
 
@@ -104,10 +106,84 @@ jobs:
           app-name: ${{ env.BACKEND_WEBAPP_DEV }}
           images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build.outputs.image-version }}
 
-  deploy-uat:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+  build-uat:
+    # https://github.com/orgs/community/discussions/27154 github.event.pull_request.base.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || (github.event.pull_request.base.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    #if: always()
     runs-on: ubuntu-latest
-    needs: build
+    outputs:
+      image-version: ${{ steps.image-version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Debug GitHub context
+        run: |
+          echo "Event name: ${GITHUB_EVENT_NAME}"
+          echo "Ref: ${GITHUB_REF}"
+          echo "Base Ref: ${GITHUB_BASE_REF}"
+          echo "PR Base Ref: ${GITHUB_PR_BASE_REF}"
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8 pytest
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Test with pytest
+        run: python -m pytest --cov=iebank_api -v
+
+      - name: Login via Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get Docker registry credentials from Azure Key Vault
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
+
+      - name: Login to Docker Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}
+          username: ${{ env.REGISTRY_USERNAME }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      - name: Set image version
+        id: image-version
+        run: echo "version=$(date +'%Y.%m.%d.%H.%M')" >> $GITHUB_OUTPUT
+
+      - name: Build and push image
+        run: |
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ steps.image-version.outputs.version }}
+          docker build . -t ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:latest
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:${{ steps.image-version.outputs.version }}
+          docker push ${{ env.DOCKER_REGISTRY_SERVER_URL_UAT }}/${{ env.IMAGE_NAME_UAT }}:latest
+
+
+  deploy-uat:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || (github.event.pull_request.base.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    needs: build-uat
     environment:
       name: 'UAT'
 
@@ -122,7 +198,7 @@ jobs:
           inlineScript: |
             echo "REGISTRY_USERNAME=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_USERNAME }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
             echo "REGISTRY_PASSWORD=$(az keyvault secret show --name ${{ env.KEY_VAULT_SECRET_NAME_ACR_PASSWORD }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
-            echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_DEV }} --query value -o tsv)" >> $GITHUB_ENV
+            echo "MANAGED_ID_OBJECT_ID=$(az keyvault secret show --name ${{ env.MANAGED_ID_KEYVAULT_KEY }} --vault-name ${{ env.KEY_VAULT_NAME_UAT }} --query value -o tsv)" >> $GITHUB_ENV
 
       - name: Login to Docker Registry (UAT)
         uses: azure/docker-login@v2
