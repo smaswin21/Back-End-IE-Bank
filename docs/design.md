@@ -62,7 +62,7 @@
 
 Operational Excellence focuses on ensuring efficient and reliable operations by streamlining processes, automating repetitive tasks, and fostering robust monitoring and logging practices. This section outlines the design decisions made to enhance operational capabilities for both frontend and backend components.
 
----
+
 
 ### Frontend Design Decisions
 
