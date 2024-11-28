@@ -107,7 +107,6 @@ jobs:
           images: ${{ env.DOCKER_REGISTRY_SERVER_URL_DEV }}/${{ env.IMAGE_NAME_DEV }}:${{ needs.build.outputs.image-version }}
 
   build-uat:
-     also on pull
     if: github.event_name == 'pull_request' && github.base_ref == 'refs/heads/main' || github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     #if: always()
     runs-on: ubuntu-latest
