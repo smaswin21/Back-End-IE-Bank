@@ -1,5 +1,37 @@
 # Azure Well-Architected Framework
 
+## Reliability Pillar
+
+The **Reliability Pillar** is critical to maintaining the availability and fault tolerance of the IE Bank application. This pillar ensures that the system can withstand failures, recover quickly, and continue to deliver services with minimal disruption to end users. Collaboration between the Site Reliability Engineer and Infrastructure Developer resulted in the following comprehensive design strategies:
+
+- **Redundancy and Failover**:  
+  Key application components, such as the Azure PostgreSQL Database and backend App Services, were configured with redundancy to ensure continued operation in the event of hardware or software failures. Automatic failover mechanisms were implemented for the database, ensuring uninterrupted availability.
+
+- **Monitoring for Downtime and Errors**:  
+  Azure Monitor and Log Analytics were used to track availability metrics, error rates, and resource health. Custom dashboards in Azure Workbooks provide real-time visibility into system performance, allowing the team to detect and address potential issues proactively.
+
+- **Backup and Recovery Plans**:  
+  Scheduled backups for critical resources, including the PostgreSQL Database and Azure Key Vault, ensure data integrity and recoverability. Restore operations were tested and configured to meet an RPO (Recovery Point Objective) of less than 15 minutes, minimizing potential data loss during incidents.
+
+- **Health Probes and Alerts**:  
+  Health probes were configured in Azure Load Balancer to continuously monitor the status of App Services. Any anomalies, such as high latency or application downtime, trigger automated alerts to the response team. This enables rapid identification and resolution of issues before they impact users.
+
+- **Resilience Through Modularization**:  
+  The infrastructure was modularized using Bicep files, allowing individual components (e.g., database, web services, and monitoring tools) to be managed independently. This approach ensures that failures in one module do not cascade to the entire system, increasing overall reliability.
+
+- **Disaster Recovery**:  
+  A disaster recovery plan was developed to ensure that critical services, such as databases and authentication mechanisms, can be restored in secondary regions during catastrophic failures. The plan includes regular disaster recovery drills to ensure readiness.
+
+- **Testing for Fault Tolerance**:  
+  Chaos engineering practices were introduced to test the system's ability to recover from failures. Simulated disruptions, such as service unavailability or high latency, were injected into the system to validate the effectiveness of redundancy and failover mechanisms.
+
+- **Automated Remediation**:  
+  Automated scripts and workflows were implemented to address common issues, such as restarting services or scaling resources, without manual intervention. These self-healing mechanisms ensure faster recovery and reduce downtime.
+
+By implementing these measures, the IE Bank application is equipped to handle failures gracefully, maintain availability, and provide a reliable user experience. Regular reviews and drills ensure that the system remains resilient to evolving challenges.
+
+---
+
 ## Security Pillar
 
 ### GitHub Advanced Security
