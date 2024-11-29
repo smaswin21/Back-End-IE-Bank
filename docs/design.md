@@ -2,7 +2,7 @@
 
 ## Reliability Pillar
 
-The **Reliability Pillar** is critical to maintaining the availability and fault tolerance of the IE Bank application. This pillar ensures that the system can withstand failures, recover quickly, and continue to deliver services with minimal disruption to end users. Collaboration between the Site Reliability Engineer and Infrastructure Developer resulted in the following comprehensive design strategies:
+The Reliability Pillar is critical to maintaining the availability and fault tolerance of the IE Bank application. This pillar ensures that the system can withstand failures, recover quickly, and continue to deliver services with minimal disruption to end users.
 
 - **Redundancy and Failover**:  
   Key application components, such as the Azure PostgreSQL Database and backend App Services, were configured with redundancy to ensure continued operation in the event of hardware or software failures. Automatic failover mechanisms were implemented for the database, ensuring uninterrupted availability.
@@ -54,7 +54,7 @@ By implementing these measures, the IE Bank application is equipped to handle fa
 6. **CODEOWNERS**:  
    Configured to assign ownership of critical code sections, ensuring only designated experts approve changes, improving accountability and security.
 
----
+
 
 ### Secure Secrets Management
 
@@ -64,7 +64,7 @@ By implementing these measures, the IE Bank application is equipped to handle fa
 2. **Managed Identities**:  
    Eliminates hard-coded credentials by providing secure, temporary resource access, enhancing security and simplifying secrets retrieval for applications.
 
----
+
 
 ### Security Frameworks
 
@@ -138,7 +138,7 @@ Operational Excellence focuses on ensuring efficient and reliable operations by 
 #### HTML Template Updates
 - Created separate HTML templates for local testing, enabling easier debugging and operational testing for both user and admin interfaces.
 
----
+
 
 ### Key Operational Practices
 
@@ -155,4 +155,27 @@ Operational Excellence focuses on ensuring efficient and reliable operations by 
 
 This framework ensures streamlined operations, efficient debugging, and enhanced observability for IE Bank's digital banking application.
 
+## Performance Efficiency Pillar
+
+The **Performance Efficiency Pillar** focuses on building a scalable and responsive infrastructure that effectively utilizes resources to support application demands. This ensures that the IE Bank application remains performant and responsive even during periods of high traffic or unexpected demand. 
+
+- **Scalable Architecture**:  
+  Azure App Service Plan configurations were chosen to enable automatic scaling based on incoming traffic patterns. This ensures that both backend APIs and frontend static content are dynamically allocated resources during peak usage while minimizing costs during low activity periods. Horizontal scaling was implemented to allow the system to increase capacity seamlessly.
+
+- **Optimized Resource Allocation**:  
+  Different SKUs were used across environments based on their usage requirements. Lower-cost SKUs (e.g., B1) were applied to Development and UAT environments to reduce costs, while Production environments were provisioned with higher-tier SKUs to ensure reliability and responsiveness for end users.
+
+- **Concurrency Optimization**:  
+  Leveraged Azure App Services’ process model for handling multiple concurrent requests. This allows backend and frontend services to scale out by adding additional instances during periods of high demand. Each instance operates independently, supporting efficient resource utilization.
+
+- **Monitoring and Metrics**:  
+  Application Insights was integrated to monitor key performance metrics such as request response times, throughput, and CPU usage. These metrics are analyzed against Service Level Objectives (SLOs), ensuring that 95% of API requests are processed within 500ms.
+
+- **Automated Testing for Load and Stress**:  
+  Load and stress testing were conducted regularly using automated tools to simulate peak traffic scenarios. This ensures the infrastructure can handle maximum load without degradation in performance. Test results informed adjustments to scaling policies and resource configurations.
+
+- **Caching and Content Delivery**:  
+  Static content delivery was optimized using Azure Static Web Apps, which reduces latency for end-users by hosting content closer to their location. API responses were cached to reduce unnecessary load on the database and backend services.
+
+By implementing these strategies, the infrastructure is designed to adapt dynamically to varying workloads, optimize resource use, and maintain high responsiveness, ensuring a seamless user experience.
 
