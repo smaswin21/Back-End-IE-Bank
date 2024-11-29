@@ -90,6 +90,44 @@ By implementing these measures, the IE Bank application is equipped to handle fa
 
 ---
 
+## Cost Optimization Design Decisions
+
+### Overview
+In collaboration with the Infrastructure Developer, specific decisions were made to align our design with the Azure Well-Architected Framework's **Cost Optimization** pillar. These include leveraging scalable and efficient resource configurations, avoiding unnecessary costs, and ensuring environment-specific cost controls.
+
+### Key Decisions
+- **Resource Right-Sizing**:  
+  Ensured App Service Plans and Static Web Apps use cost-effective SKUs (e.g., Free or B1) for non-production environments.
+
+- **Shared Resources**:  
+  Centralized Container Registry, Key Vault, and Log Analytics Workspace to minimize redundancy across environments.
+
+- **Environment-Specific Configurations**:  
+  - **Development**: Focused on minimal compute (low-tier SKUs) and cost efficiency for experimentation and testing.  
+  - **UAT**: Balanced cost and performance to simulate production for stakeholder validation.  
+  - **Production**: Allocated higher-tier SKUs and robust monitoring tools for reliability and scalability.  
+
+- **Static Web Apps**:  
+  Chosen for frontend hosting due to their low operational cost and simplicity.
+
+- **Modularized Infrastructure**:  
+  Used Bicep files with environment-specific parameterization to standardize deployments and reduce misconfigurations that could incur additional costs.
+
+### Implementation Highlights
+- **Monitoring and Alerts**:  
+  Integrated Log Analytics and Application Insights to monitor resource usage and eliminate wastage.
+
+- **Automated CI/CD Workflows**:  
+  Deployed resources only on-demand using GitHub Actions, ensuring unused environments are not needlessly consuming costs.
+
+- **Optimization Policies**:  
+  - Used lifecycle management for resources like Container Registries to clean up unused images.  
+  - Enforced tagging for cost attribution across all environments.
+
+
+
+---
+
 ## Operational Excellence Pillar
 
 
