@@ -518,10 +518,6 @@ We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our St
   - **Production**: [prod.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/prod.parameters.json)
 - **CI/CD Workflows**:
   - **Infrastructure Build Workflow (CI)**: [ie-bank-infra.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
-  - **Deployment Workflows (CD)**:
-    - [deploy-dev.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-dev.yml)
-    - [deploy-uat.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-uat.yml)
-    - [deploy-prod.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-prod.yml)
 - **GitHub Actions Portal**: [Actions](https://github.com/smaswin21/Banking_Infra/actions)
 
 ---
