@@ -12,6 +12,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Run Scorecard
-        uses: ossf/scorecard-action@v2
+        uses: ossf/scorecard-action@v2.4.0
         with:
           results_file: results.sarif
