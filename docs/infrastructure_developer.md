@@ -65,19 +65,8 @@ The infrastructure is broken down into logical components, each encapsulated wit
 
 The following diagram illustrates the dependencies between modules:
 
-```mermaid
-graph BT
-    main.bicep --> applicationDatabase
-    main.bicep --> appService
-    applicationDatabase --> postgresSQLServer
-    applicationDatabase --> postgresSQLDatabase
-    appService --> containerRegistry
-    appService --> appServicePlan
-    appService --> appServiceBE
-    appServiceBE --> appServicePlan
-    appServiceBE --> containerRegistry
-    postgresSQLDatabase --> postgresSQLServer
-```
+![image(5)](https://github.com/user-attachments/assets/92a9b070-910e-45c5-9441-1105de680d01)
+
 
 ---
 
