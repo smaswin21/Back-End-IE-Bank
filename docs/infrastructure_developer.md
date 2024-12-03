@@ -2,25 +2,68 @@
 
 ## Overview
 
-This document details the infrastructure setup, including IaC practices, resource configuration, and deployment strategies.
+This document provides a comprehensive overview of our infrastructure setup for the **MONEY404-Bank** web application. It details our **Infrastructure as Code (IaC)** practices, resource configurations, deployment strategies, and the modularization approach adopted using **Azure Bicep** templates. The goal is to ensure clarity, maintainability, and scalability across Development (Dev), User Acceptance Testing (UAT), and Production (Prod) environments.
 
 ### Table of Contents
 
 - [Infrastructure as Code (IaC) Strategy](#infrastructure-as-code-iac-strategy)
+  - [Modularization Strategy](#modularization-strategy)
+  - [Resource Dependency Graph](#resource-dependency-graph)
 - [Environment Configurations](#environment-configurations)
+  - [Parameter Files](#parameter-files)
+  - [Key Configurations](#key-configurations)
 - [Resource Modules and Bicep Files](#resource-modules-and-bicep-files)
+  - [Applications Modules](#applications-modules)
+  - [Databases Modules](#databases-modules)
+  - [Infrastructure Modules](#infrastructure-modules)
+  - [Orchestrators](#orchestrators)
+- [Implementing Container Hosting](#implementing-container-hosting)
+- [Continuous Integration and Continuous Deployment (CI/CD)](#continuous-integration-and-continuous-deployment-cicd)
+  - [Workflow Configuration](#workflow-configuration)
+  - [Secrets Management](#secrets-management)
+  - [Rollback Strategy](#rollback-strategy)
+  - [Security and Compliance](#security-and-compliance)
+- [Static Web App Deployment](#static-web-app-deployment)
+- [Deployment Process](#deployment-process)
+- [Links to Code Repositories](#links-to-code-repositories)
 
 ---
 
 ## Infrastructure as Code (IaC) Strategy
 
-> [!IMPORTANT]
-> At this stage, our project deployment strategy consisted only of static apps without any containerization.
+Our infrastructure is defined and managed using **Infrastructure as Code (IaC)** principles, leveraging **Azure Bicep** templates for declarative resource provisioning. We have adopted a modularization strategy to enhance reusability, maintainability, and clarity.
 
-Unstructured Devlog:
-> I started by looking at what services we are using at this stage and created a separate module for each of them, all the way down to the firewall, after modularizing it it proved to cause an overhead which was resovled by keeping it in our sql database server. All modules are then put together in the main bicep file. Currently modularized services are the Postgressql Server, Postgressql Database, Statkic Web Application.
-> Now the infrastructure has a modularized setup with the following structure.
+### Modularization Strategy
 
+**Modularity** is about designing our code in such a way that it's composed of smaller, interchangeable components. Each module represents an Azure service, encapsulating its configuration and deployment logic. Our main goals with modularization are:
+
+- **Maintainability**: Isolating components to make updates and debugging more manageable.
+- **Reusability**: Enabling modules to be reused across different environments and projects.
+- **Scalability**: Facilitating the addition of new modules without impacting existing ones.
+- **Testability**: Simplifying testing by dealing with smaller, isolated modules.
+- **Flexibility**: Allowing easy swapping of modules with the same interface.
+
+#### Directory Structure
+
+The infrastructure is broken down into logical components, each encapsulated within its own module. These modules are organized into directories based on their functionality:
+
+- **`modules/`**: The root directory for all modular templates.
+  - **`applications/`**: Contains modules related to application services, such as App Service Plans and App Services for the frontend and backend.
+  - **`databases/`**: Contains modules for deploying database resources, including PostgreSQL Flexible Server and databases.
+  - **`infrastructure/`**: Contains shared infrastructure modules, such as Key Vault, Log Analytics Workspace, Application Insights, and Azure Container Registry.
+- **`main.bicep`**: Orchestrates the deployment of all modules based on input parameters.
+
+#### Benefits of Modularization
+
+- **Maintainability**: Changes to a specific component can be made in one place without affecting other parts of the infrastructure.
+- **Reusability**: Modules can be reused across different environments with varying configurations.
+- **Scalability**: Supports the evolving needs of our application and organization by allowing for easy addition of new modules or services.
+- **Testability**: Smaller, isolated modules are simpler to test for correctness.
+- **Flexibility**: Swapping out one module for another with the same interface becomes straightforward.
+
+### Resource Dependency Graph
+
+The following diagram illustrates the dependencies between modules:
 
 ```mermaid
 graph BT
@@ -36,221 +79,467 @@ graph BT
     postgresSQLDatabase --> postgresSQLServer
 ```
 
-
 ---
 
 ## Environment Configurations
 
-Document the parameter files for each environment (Development, UAT, Production) and any unique settings.
-> In the end our infrastructure made a decision to continue with using JSON files to specify our parameters for the infrastructure. The choice to do this was a consciuos acknowledgement of potential future migrations and easier interoperabiliyt of a JSON file comapred to the more _vendor locked_ bicep file.
+We have defined separate configurations for each environment—**Development (Dev)**, **User Acceptance Testing (UAT)**, and **Production (Prod)**—using JSON parameter files. This approach allows us to customize resource names, locations, and settings per environment while maintaining a single codebase for our Bicep templates.
 
+### Parameter Files
 
-This modules host variables names and value that will be used in deployment. Such as postgresSQLServerName, appServicePlanName, staticWebAppName, and more usefull variables. The environent configurations are then called in the workflow, to facilitate and modularize the diffrent naming of diffrent resources in diffrent environments.
+- **Development**: [dev.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/dev.parameters.json)
+- **UAT**: [uat.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/uat.parameters.json)
+- **Production**: [prod.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/prod.parameters.json)
 
-[dev.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/dev.parameters.json):
+#### Key Configurations
 
-When we trigger the deployment to `Devellopment`, (if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'. This means that every time we push on a branch we deply to dev), we start the `Deply Infrastructure (Dev)` procedure. This will, of course use DEV resource group name defined at the beginning (`RESOURCE_GROUP_DEV: BCSAI2024-DEVOPS-STUDENTS-B-DEV`), and then will call for the parameters needed for the main.bicep template. These are hosted in ./parameters/dev.parameters.json. This is the house for name of each resurce that will be deployed trought the bicep modules structure we have created.
+- **Resource Names**: Prefixed with the environment identifier (e.g., `money404-asp-dev` for Dev).
+- **Locations**: Azure regions are chosen based on proximity and compliance requirements.
+- **SKUs and Tiers**: Adjusted based on the environment to optimize cost and performance.
+- **Access and Security**:
+  - **Key Vault Role Assignments**: Assigns appropriate roles to service principals and groups.
+  - **Secrets Management**: Credentials and keys are stored securely in Azure Key Vault.
+- **Monitoring and Diagnostics**:
+  - **Application Insights and Log Analytics**: Configured for comprehensive monitoring.
+  - **Diagnostic Settings**: Enabled for services like Key Vault, ACR, and PostgreSQL.
 
-[uat.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/uat.parameters.json):
+#### Rationale for Using JSON Parameter Files
 
-For UAT parameters the same appended. For example, if in dev parameter the static web app is set to money404-swa-dev. here in UAT it is set to money404-swa-uat. When in workflow we call the parameter, it will be automaticaly be created using the predefined names. Avoiding conflict and code modularization.
+We chose to use JSON files for parameterization to ensure:
 
->[prod.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/prod.parameters.json):
----
-
-## Implementing Container Hosting
-
-
-> Also adding modularized of infra for Linux Containers App Service, Docker Container Registry, Azure Key Vault
-
----
-
-## Continuous Integration and Continuous Development
-
-> Trying  to use the checkov tool for linting.
-
-With Github actions and `.github/workflows/<file>.yml` we implemented Continuous Integration. This is done in each repo: [backend](https://github.com/smaswin21/Back-End-IE-Bank/blob/main/.github/workflows/ie-bank-backend.yml), [frontend](https://github.com/smaswin21/Front-End-IE-Bank/blob/main/.github/workflows/ie-bank-frontend.yml) and [infra](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml). The triggers are consistent accros all the repos.
-1. When we push to a branch that is not main, we deploy to `dev`
-    ```
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    ```
-2. When we create a pull request to main, we deploy to `uat`
-    ```
-    if: github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch'
-    ```
-3. When we merge the pull request, we deploy to `prod`
-
-4. Note that we also allow manual deployment to all environment with:
-    ```
-    github.event_name == 'workflow_dispatch'
-    ```
+- **Ease of Migration**: JSON is widely supported and facilitates easier migration to other IaC tools if needed.
+- **Interoperability**: Enhances compatibility with various tools and services that consume JSON.
+- **Separation of Concerns**: Keeps environment-specific configurations separate from the main templates, promoting cleaner code and easier management.
 
 ---
 
 ## Resource Modules and Bicep Files
 
->Check the infra repo modules [here](https://github.com/smaswin21/Banking_Infra/tree/staticwebapp/modules)
+Our infrastructure modules are designed to be reusable and environment-agnostic, relying on parameterization for customization. Below is a detailed overview of each module and its purpose.
 
-Our infra modules directory contain Bicep templates for deploying Azure resources for the IE Bank application. The templates are organized into modular components to ensure reusability, clarity, and maintainability.
+### Applications Modules
 
-```bash
-modules
-├── applications            # Application services and plans
-│   ├── app-service-plan.bicep
-│   ├── frontend-app-service.bicep
-│   └── backend-app-service.bicep
-├── database                # Database resources
-│   ├── postgres-sql-server.bicep
-│   └── postgres-sql-database.bicep
-├── infrastructure          # Shared infrastructure resources
-|   ├── keyvault.bicep
-│   ├── log-analytics.bicep
-│   ├── log-analytics.bicep
-│   └── container-registry.bicep
-├── database.bicep          # Combined deployment for databases
-└── website.bicep           # Combined deployment for the website frontend and backend
-```
+#### 1. **app-service-plan.bicep**
 
-1. Install the Azure CLI: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
+- **Purpose**: Deploys an Azure App Service Plan.
+- **File**: [app-service-plan.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/app-service-plan.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `appServicePlanName`: Name of the App Service Plan.
+  - `skuName`: SKU tier (`B1`, `F1`, etc.).
+- **Outputs**:
+  - `id`: Resource ID of the App Service Plan.
+- **Environment-Specific Configurations**:
+  - `appServicePlanName`
+  - `skuName`
 
-2. Install Bicep: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install
-Joint Orchestration
+#### 2. **backend-app-service.bicep**
 
-3. Write modules and test localy (`az bicep build --file main.bicep`)
+- **Purpose**: Deploys the backend service using a Docker container.
+- **File**: [backend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/backend-app-service.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `appServiceAPIAppName`: Name of the backend App Service.
+  - `appServicePlanId`: ID of the associated App Service Plan.
+  - `containerRegistryName`: Name of the Azure Container Registry.
+  - `dockerRegistryUserName`, `dockerRegistryPassword`: Credentials for the container registry.
+  - `dockerRegistryImageName`, `dockerRegistryImageTag`: Docker image details.
+  - `appSettings`: Array of custom environment variables for the backend service.
+  - `appInsightsInstrumentationKey`, `appInsightsConnectionString`: Monitoring configurations.
+- **Outputs**:
+  - `appServiceAppHostName`: Hostname of the App Service.
+  - `systemAssignedIdentityPrincipalId`: Principal ID of the managed identity.
+- **Environment-Specific Configurations**:
+  - `appServiceAPIAppName`
+  - `dockerRegistryImageTag`
+  - `appSettings`
 
-4. The complete stack is organized by the main.bicep file in the parent directory
+#### 3. **frontend-app-service.bicep**
 
+- **Purpose**: Deploys the frontend service for the website.
+- **File**: [frontend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `appServiceAppName`: Name of the frontend App Service.
+  - `appServicePlanId`: ID of the associated App Service Plan.
+  - `appCommandLine`: Command line to run for the App Service.
+  - `appInsightsInstrumentationKey`, `appInsightsConnectionString`: Monitoring configurations.
+  - `name`: Name of the Static Web App.
+  - `locationswa`: Deployment location for the Static Web App.
+  - `sku`: SKU tier for the Static Web App (`Free`, `Standard`).
+- **Outputs**:
+  - `appServiceAppHostName`: Hostname of the App Service.
+  - `staticWebAppUrl`: URL of the Static Web App.
+  - `staticWebAppEndpoint`: Endpoint of the Static Web App.
+  - `staticWebAppResourceName`: Resource name of the Static Web App.
+- **Environment-Specific Configurations**:
+  - `appServiceAppName`
+  - `name`
+  - `sku`
 
+### Databases Modules
 
-- **app-service-plan.bicep**
-  - Deploys an Azure App Service Plan.
-  - Parameters:
-    - `location`: Deployment location.
-    - `appServicePlanName`: Name of the App Service Plan.
-    - `skuName`: SKU tier (`B1`, `F1`, etc.).
+#### 1. **postgres-sql-server.bicep**
 
-- **backend-app-service.bicep**
-  - Deploys the backend service using a Docker container.
-  - Parameters:
-    - `location`: Deployment location.
-    - `appServiceAPIAppName`: Name of the backend App Service.
-    - `appServicePlanId`: ID of the associated App Service Plan.
-    - `dockerRegistryUserName`, `dockerRegistryPassword`: Credentials for the container registry.
-    - `appSettings`: Array of custom environment variables for the backend service.
-    - `name`: Name for static web app
-  - output:
-    ```
-    output appServiceAppHostName string = appServiceApp.properties.defaultHostName
-    output staticWebAppUrl string = swa.properties.defaultHostname
-    output staticWebAppEndpoint string = swa.properties.defaultHostname
-    output staticWebAppResourceName string = swa.name
-    ```
+- **Purpose**: Deploys a PostgreSQL Flexible Server.
+- **File**: [postgres-sql-server.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/databases/postgres-sql-server.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `environmentType`: Environment type (`nonprod`, `prod`).
+  - `postgresSQLServerName`: Name of the PostgreSQL server.
+  - `postgreSQLAdminServicePrincipalObjectId`: Object ID for Active Directory authentication.
+  - `postgreSQLAdminServicePrincipalName`: Name for the service principal.
+  - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace for diagnostics.
+- **Outputs**:
+  - `postgresSQLServerName`: Name of the PostgreSQL server.
+- **Environment-Specific Configurations**:
+  - `postgresSQLServerName`
+  - `environmentType`
 
-- **frontend-app-service.bicep**
-  - Deploys the frontend service for the website.
-  - Parameters:
-    - `location`: Deployment location.
-    - `appServiceAppName`: Name of the frontend App Service.
-    - `appServicePlanId`: ID of the associated App Service Plan.
-    - `appInsightsInstrumentationKey`, `appInsightsConnectionString`: Monitoring configurations.
+#### 2. **postgres-sql-database.bicep**
 
-- **postgres-sql-server.bicep**
-  - Deploys a PostgreSQL Flexible Server.
-  - Parameters:
-    - `location`: Deployment location.
-    - `environmentType`: Environment type (`nonprod`, `prod`).
-    - `postgresSQLServerName`: Name of the PostgreSQL server.
+- **Purpose**: Deploys a database within an existing PostgreSQL server.
+- **File**: [postgres-sql-database.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/databases/postgres-sql-database.bicep)
+- **Parameters**:
+  - `postgresSQLServerName`: Name of the existing PostgreSQL server.
+  - `postgresSQLDatabaseName`: Name of the database to create.
+- **Outputs**:
+  - `postgresSQLDatabaseName`: Name of the PostgreSQL database.
+- **Environment-Specific Configurations**:
+  - `postgresSQLDatabaseName`
 
-- **postgres-sql-database.bicep**
-  - Deploys a database within an existing PostgreSQL server.
-  - Parameters:
-    - `postgresSQLServerName`: Name of the existing PostgreSQL server.
-    - `postgresSQLDatabaseName`: Name of the database to create.
+### Infrastructure Modules
 
-- **keyvault.bicep**
-  - Deploys an Azure Key Vault.
-  - Parameters:
-    - `location`: Deployment location.
-    - `keyVaultName`: Name of the Key Vault.
-    - `roleAssignments`: Array of role assignments for the Key Vault.
+#### 1. **keyvault.bicep**
 
-- **log-analytics.bicep**
-  - Deploys a Log Analytics Workspace.
-  - Parameters:
-    - `location`: Deployment location.
-    - `name`: Name of the Log Analytics Workspace.
+- **Purpose**: Deploys an Azure Key Vault.
+- **File**: [keyvault.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/keyvault.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `keyVaultName`: Name of the Key Vault.
+  - `roleAssignments`: Array of role assignments for the Key Vault.
+  - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace for diagnostics.
+- **Outputs**:
+  - `keyVaultName`: Name of the Key Vault.
+  - `keyVaultResourceId`: Resource ID of the Key Vault.
+- **Environment-Specific Configurations**:
+  - `keyVaultName`
+  - `roleAssignments`
 
-- **app-insights.bicep**
-  - Deploys an Application Insights resource.
-  - Parameters:
-    - `location`: Deployment location.
-    - `appInsightsName`: Name of the Application Insights resource.
-    - `logAnalyticsWorkspaceId`: ID of the associated Log Analytics Workspace.
+#### 2. **log-analytics.bicep**
 
-- **container-registry.bicep**
-  - Deploys an Azure Container Registry.
-  - Parameters:
-    - `location`: Deployment location.
-    - `registryName`: Name of the container registry.
-    - `sku`: SKU tier (`Basic`, `Standard`, `Premium`).
-    - `logAnalyticsWorkspaceId`: This is the id of our log analytics for the container registry to use via the diagnostics
+- **Purpose**: Deploys a Log Analytics Workspace.
+- **File**: [log-analytics.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/log-analytics.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `name`: Name of the Log Analytics Workspace.
+- **Outputs**:
+  - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace.
+  - `logAnalyticsWorkspaceName`: Name of the Log Analytics Workspace.
+- **Environment-Specific Configurations**:
+  - `name`
 
+#### 3. **app-insights.bicep**
 
-- **database.bicep**
-  - Combined deployment for databases
-  - Parameters:
+- **Purpose**: Deploys an Application Insights resource.
+- **File**: [app-insights.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/app-insights.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `appInsightsName`: Name of the Application Insights resource.
+  - `logAnalyticsWorkspaceId`: ID of the associated Log Analytics Workspace.
+  - `keyVaultResourceId`: Resource ID of the Key Vault for storing secrets.
+- **Outputs**:
+  - `appInsightsInstrumentationKey`: Instrumentation Key for Application Insights.
+  - `appInsightsConnectionString`: Connection String for Application Insights.
+- **Environment-Specific Configurations**:
+  - `appInsightsName`
 
-- **website.bicep**
-  - orchestrates the deployment of the entire website, including both frontend and backend applications.
-  - Resources Deployed
-    1. Backend Service: Deployed via the backend-app-service.bicep module.
-    1. Frontend Service: Deployed via the frontend-app-service.bicep module.
-    1. App Service Plan: Shared between frontend and backend.
-    1. Container Registry: Used for storing backend Docker images.
-    1. Monitoring: Includes Application Insights and Log Analytics.
-  - Parameters:
-    - environmentType: Environment type (nonprod, prod).
-    - location: Deployment location.
-    - containerRegistryName: Name of the Azure Container Registry.
-    - appServiceAppName, appServiceAPIAppName: Names of the frontend and backend services.
+#### 4. **container-registry.bicep**
 
+- **Purpose**: Deploys an Azure Container Registry (ACR).
+- **File**: [container-registry.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/container-registry.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `registryName`: Name of the container registry.
+  - `sku`: SKU tier (`Basic`, `Standard`, `Premium`).
+  - `keyVaultResourceId`: Resource ID of the Key Vault for storing secrets.
+  - `keyVaultSecretNameAdminUsername`, `keyVaultSecretNameAdminPassword0`, `keyVaultSecretNameAdminPassword1`: Names for storing ACR credentials.
+  - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace for diagnostics.
+- **Environment-Specific Configurations**:
+  - `registryName`
+  - `sku`
 
-### Static Web App Deployment
+### Orchestrators
 
-Static Web Apps are an excellent way to host front-end applications (HTML, CSS, Vue, etc.) at a significantly lower cost. They provide a simple and efficient solution for hosting static content.
+#### 1. **database.bicep**
 
-#### Initial Approach: Using Online Modules
+- **Purpose**: Orchestrates the deployment of the PostgreSQL server and database.
+- **File**: [database.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/database.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `environmentType`: Environment type (`nonprod`, `prod`).
+  - `postgresSQLServerName`: Name of the PostgreSQL server.
+  - `postgresSQLDatabaseName`: Name of the database.
+  - `postgreSQLAdminServicePrincipalObjectId`, `postgreSQLAdminServicePrincipalName`: AD authentication details.
+  - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace.
+- **Environment-Specific Configurations**:
+  - `postgresSQLServerName`
+  - `postgresSQLDatabaseName`
 
-Initially, we explored using an Azure-provided online module (`module staticWebApp 'br/public:avm/res/web/static-site:0.3.0'`) for deploying the Static Web App. However, this approach introduced several challenges:
+#### 2. **website.bicep**
 
-- **Complexity**: Incorporating the module into our Bicep folder structure was cumbersome.
-- **Dependency**: It tied us to an external template, making future modifications or customizations more difficult.
+- **Purpose**: Orchestrates the deployment of the entire website, including both frontend and backend applications.
+- **File**: [website.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/website.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `appServicePlanName`: Name of the App Service Plan.
+  - `appServiceAppName`, `appServiceAPIAppName`: Names of the frontend and backend services.
+  - `staticappServiceAppName`: Name of the Static Web App.
+  - `appInsightsName`: Name of the Application Insights resource.
+  - `environmentType`: Environment type (`nonprod`, `prod`).
+  - `containerRegistryName`: Name of the Azure Container Registry.
+  - `dockerRegistryImageName`, `dockerRegistryImageTag`: Docker image details.
+  - `keyVaultResourceId`: Resource ID of the Key Vault.
+  - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace.
+- **Outputs**:
+  - `appServiceAppHostName`: Hostname of the frontend App Service.
+  - `staticWebAppEndpoint`: Endpoint of the Static Web App.
+  - `staticWebAppResourceName`: Resource name of the Static Web App.
+- **Environment-Specific Configurations**:
+  - `appServicePlanName`
+  - `appServiceAppName`
+  - `appServiceAPIAppName`
+  - `staticappServiceAppName`
 
-#### Final Approach: Local Template Hosting
+#### 3. **main.bicep**
 
-To overcome these limitations, we decided to host the template locally. We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our Static Web App. This allowed us to streamline the deployment process and fully control the template's behavior.
-
-You can find the code for the custom module here:
-[**frontend-app-service.bicep**](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep).
-
-## Deployment Process
-
-We followed Azure's official documentation to integrate the Static Web App into our structure. Here's how we set it up:
-
-1. **Parameterization**:
-   - We defined key parameters for deployment, including:
-     - **Static Web App Name**: e.g., `money404-dev-swa`, `money404-uat-swa`, `money404-prod-swa`.
-     - **SKU**: Free, Standard, etc.
-     - **Location**: e.g., West Europe.
-
-   These values are stored in environment-specific parameter files (e.g., `dev.parameters.json`) to ensure flexibility across environments.
-
-2. **Module Integration**:
-   In the `main.bicep` file, we call the `frontend-app-service.bicep` module and pass the required parameters. This ensures the Static Web App is deployed consistently across environments.
-
-3. **Frontend Configuration**:
-   After deploying the Static Web App, we pass its token to the front-end application. This token ensures that the front-end is hosted in the correct Static Web App instance.
+- **Purpose**: Orchestrates the deployment of all modules based on input parameters.
+- **File**: [main.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/main.bicep)
+- **Functionality**:
+  - Calls the orchestrators `database.bicep` and `website.bicep`.
+  - Passes environment-specific parameters to each module.
+  - Ensures that dependencies are correctly managed.
 
 ---
 
-By hosting the template locally and integrating it into our existing Bicep structure, we simplified the deployment process while maintaining full control over the configuration.
+## Implementing Container Hosting
+
+### Transition to Containerization
+
+As our application evolved, we recognized the need to containerize our backend services for better scalability and portability. We implemented container hosting using **Azure App Services for Linux Containers** and **Azure Container Registry (ACR)**.
+
+### Azure Container Registry (ACR)
+
+- **Purpose**: Stores Docker images for the backend application.
+- **Configuration**:
+  - **Name**: Environment-specific (e.g., `money404acrdev`).
+  - **SKU**: Selected based on the environment (`Basic` for Dev/UAT, `Standard` or `Premium` for Prod).
+  - **Admin User**: Enabled, and credentials are stored securely in Azure Key Vault.
+  - **Diagnostics**: Configured to send logs and metrics to Log Analytics Workspace for monitoring.
+- **Module File**: [container-registry.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/container-registry.bicep)
+
+### Backend App Service Configuration
+
+- **Runtime**: Configured to use Docker containers.
+- **Image Source**: Pulls images from the ACR.
+- **Authentication**: Uses admin credentials retrieved securely from Azure Key Vault.
+- **Environment Variables**: Configured via `appSettings`, including database connection strings and other application settings.
+- **Monitoring**: Integrated with Application Insights for performance monitoring and diagnostics.
+- **Module File**: [backend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/backend-app-service.bicep)
+
+### Security Enhancements
+
+- **Managed Identity**: Enabled System-Assigned Managed Identity on the backend App Service to securely access Azure resources without embedding credentials.
+- **Key Vault Integration**: Secrets and credentials are retrieved at runtime from Azure Key Vault, enhancing security posture.
+
+---
+
+## Continuous Integration and Continuous Deployment (CI/CD)
+
+We have implemented a robust CI/CD pipeline using **GitHub Actions** to automate the deployment process across all environments. This ensures consistent and reliable deployments, reduces manual effort, and minimizes the risk of errors.
+
+### Workflow Configuration
+
+Our workflows are defined in [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml) and are consistent across repositories (backend, frontend, infra).
+
+#### Triggers
+
+1. **Development Deployment**:
+   - **Trigger**: Push to any branch that is not `main`.
+   - **Action**: Deploys to the `Development` environment.
+   - **Condition**:
+     ```yaml
+     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+     ```
+
+2. **UAT Deployment**:
+   - **Trigger**: Pull request targeting the `main` branch.
+   - **Action**: Deploys to the `UAT` environment.
+   - **Condition**:
+     ```yaml
+     if: github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch'
+     ```
+
+3. **Production Deployment**:
+   - **Trigger**: Merge into the `main` branch.
+   - **Action**: Deploys to the `Production` environment.
+   - **Condition**:
+     ```yaml
+     if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+     ```
+
+4. **Manual Deployment**:
+   - **Trigger**: Manual initiation via GitHub Actions.
+   - **Action**: Allows deployment to any environment.
+   - **Condition**:
+     ```yaml
+     github.event_name == 'workflow_dispatch'
+     ```
+
+### Jobs and Dependencies
+
+- **Validation Jobs**: `validate_dev`, `validate_uat`, `validate_prod`—validate Bicep templates for syntax and schema correctness using `az bicep` commands.
+- **Linting Job**: `lint`—runs the Bicep linter to enforce code quality.
+- **Security Scanning**: `build`—uses **Checkov** for static code analysis to detect security vulnerabilities.
+- **Deployment Jobs**:
+  - **`deploy-dev`**:
+    - **Needs**: `build`, `lint`, `validate_dev`.
+    - **Environment**: `Development`.
+    - **File**: [deploy-dev.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-dev.yml)
+  - **`deploy-uat`**:
+    - **Needs**: `build`, `lint`, `validate_uat`.
+    - **Environment**: `UAT`.
+    - **File**: [deploy-uat.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-uat.yml)
+  - **`deploy-prod`**:
+    - **Needs**: `build`, `lint`, `validate_prod`, `deploy-uat`.
+    - **Environment**: `Production`.
+    - **File**: [deploy-prod.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-prod.yml)
+
+### Secrets Management
+
+- **GitHub Secrets**: Used to store sensitive information required by GitHub Actions (e.g., Azure credentials).
+- **Azure Key Vault**: Stores secrets like ACR credentials and Application Insights keys, accessed securely using managed identities.
+
+### Rollback Strategy
+
+- **Version Control**: All infrastructure code is tracked in Git, enabling easy rollback to previous stable versions.
+- **IaC**: Allows us to redeploy previous configurations consistently.
+- **Automated Testing**: Validation and linting steps catch issues before deployment.
+
+### Security and Compliance
+
+- **Access Controls**: Implemented Role-Based Access Control (RBAC) for resources.
+- **Compliance Checks**: Infrastructure code is scanned for compliance with organizational policies using **Checkov**.
+- **Secure Secrets Management**: All secrets are stored in Azure Key Vault and accessed via managed identities.
+
+---
+
+## Static Web App Deployment
+
+### Rationale for Static Web Apps
+
+**Azure Static Web Apps** provide an efficient and cost-effective way to host frontend applications with static content, offering global distribution and integrated CI/CD capabilities.
+
+### Implementation Approach
+
+We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our Static Web App.
+
+- **Benefits**:
+  - **Full Control**: Allows customization to meet our specific requirements.
+  - **Simplified Integration**: Seamlessly fits into our existing Bicep structure.
+  - **Maintainability**: Easier to update and manage over time.
+
+### Configuration Details
+
+- **Parameters**:
+  - `name`: Environment-specific Static Web App name (e.g., `money404-swa-dev`).
+  - `sku`: Defined per environment (`Free` for Dev/UAT, `Standard` for Prod).
+  - `locationswa`: Deployment location (e.g., `West Europe`).
+- **Deployment**:
+  - Integrated into the `website.bicep` orchestrator.
+  - Utilizes environment-specific parameter files for customization.
+- **Output Variables**:
+  - `staticWebAppEndpoint`: Used to configure the frontend application deployment.
+- **Module File**: [frontend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep)
+
+---
+
+## Deployment Process
+
+### Step-by-Step Deployment
+
+1. **Code Commit and Push**:
+   - Developers commit changes to their feature branches.
+   - Upon push, the `deploy-dev` job is triggered for the Development environment.
+
+2. **Validation and Linting**:
+   - Bicep templates are validated for syntax errors using `az bicep`.
+   - Linting ensures adherence to coding standards.
+
+3. **Security Scanning**:
+   - **Checkov** scans the infrastructure code for security vulnerabilities.
+
+4. **Deployment to Development**:
+   - Resources are deployed to the Development resource group.
+   - Environment-specific parameters are applied.
+
+5. **Pull Request and Merge**:
+   - Developers create a pull request targeting the `main` branch.
+   - The `deploy-uat` job is triggered upon pull request creation.
+
+6. **Deployment to UAT**:
+   - Resources are deployed to the UAT environment.
+   - QA teams perform testing and validation.
+
+7. **Approval and Production Deployment**:
+   - Upon merge into `main`, the `deploy-prod` job can be manually triggered.
+   - Requires prior successful deployment to UAT.
+
+8. **Monitoring and Verification**:
+   - Post-deployment, Application Insights and Log Analytics monitor the application.
+   - Any issues are addressed promptly.
+
+### Continuous Improvement
+
+- **Feedback Loop**: Monitoring data informs infrastructure improvements.
+- **Scalability**: Infrastructure can be scaled based on performance metrics.
+- **Updates**: Modules can be updated independently to introduce new features or optimizations.
+
+---
+
+## Links to Code Repositories
+
+- **Main Bicep File**: [main.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/main.bicep)
+- **Modules Directory**: [modules/](https://github.com/smaswin21/Banking_Infra/tree/main/modules)
+  - **Applications Modules**:
+    - [app-service-plan.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/app-service-plan.bicep)
+    - [backend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/backend-app-service.bicep)
+    - [frontend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep)
+  - **Databases Modules**:
+    - [postgres-sql-server.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/databases/postgres-sql-server.bicep)
+    - [postgres-sql-database.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/databases/postgres-sql-database.bicep)
+  - **Infrastructure Modules**:
+    - [keyvault.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/keyvault.bicep)
+    - [log-analytics.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/log-analytics.bicep)
+    - [app-insights.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/app-insights.bicep)
+    - [container-registry.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/container-registry.bicep)
+- **Parameter Files**:
+  - **Development**: [dev.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/dev.parameters.json)
+  - **UAT**: [uat.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/uat.parameters.json)
+  - **Production**: [prod.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/prod.parameters.json)
+- **CI/CD Workflows**:
+  - **Infrastructure Build Workflow (CI)**: [ie-bank-infra.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
+  - **Deployment Workflows (CD)**:
+    - [deploy-dev.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-dev.yml)
+    - [deploy-uat.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-uat.yml)
+    - [deploy-prod.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-prod.yml)
+- **GitHub Actions Portal**: [Actions](https://github.com/smaswin21/Banking_Infra/actions)
+
+---
+
+By adopting this modular and automated approach to infrastructure deployment, we ensure consistency, security, and efficiency across all environments. The use of Azure Bicep and GitHub Actions enables us to maintain high standards of quality while supporting the evolving needs of the **MONEY404-Bank** web application.
+
+---
+
+> [!NOTE]
+> For more detailed information on our infrastructure release strategy, please refer to the [Infrastructure Release Strategy](https://smaswin21.github.io/Banking_Infra/docs/infrastructure-release-strategy) section in our Design Document on GitHub Pages.
