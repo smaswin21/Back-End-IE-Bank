@@ -394,15 +394,15 @@ Our workflows are defined in [`.github/workflows/ie-bank-infra.yml`](https://git
   - **`deploy-dev`**:
     - **Needs**: `build`, `lint`, `validate_dev`.
     - **Environment**: `Development`.
-    - **File**: [deploy-dev.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-dev.yml)
+    - **File**: [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
   - **`deploy-uat`**:
     - **Needs**: `build`, `lint`, `validate_uat`.
     - **Environment**: `UAT`.
-    - **File**: [deploy-uat.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-uat.yml)
+    - **File**: [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/banking_infra/blob/main/.github/workflows/ie-bank-infra.yml)
   - **`deploy-prod`**:
     - **Needs**: `build`, `lint`, `validate_prod`, `deploy-uat`.
     - **Environment**: `Production`.
-    - **File**: [deploy-prod.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/deploy-prod.yml)
+    - **File**: [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/banking_infra/blob/main/.github/workflows/ie-bank-infra.yml)
 
 ### Secrets Management
 
