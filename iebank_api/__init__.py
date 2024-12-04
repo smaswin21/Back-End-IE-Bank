@@ -32,8 +32,8 @@ elif env == 'uat':
     print("Running in UAT mode")
     app.config.from_object('config.UATConfig')
 else:
-    print("Running in production, aka local, mode for now!")
-    app.config.from_object('config.LocalConfig')
+    print("Running in production mode for now!")
+    app.config.from_object('config.ProductionConfig')
 
 # Set a secret key for session management and Flask-Login
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'aswin')
