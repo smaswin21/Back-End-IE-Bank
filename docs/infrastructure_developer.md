@@ -1,5 +1,9 @@
 # Infrastructure Developer Documentation
 
+> Welcome to the shadows of the final frontier. It's darker than it looks. 🖖
+
+Hello, Infrastructure Developer! Welcome to the **MONEY404-Bank** web application infrastructure documentation. This guide provides an in-depth overview of our infrastructure setup, including the **Infrastructure as Code (IaC)** strategy, environment configurations, resource modules, deployment process, and more.
+
 ## Overview
 
 This document provides a comprehensive overview of our infrastructure setup for the **MONEY404-Bank** web application. It details our **Infrastructure as Code (IaC)** practices, resource configurations, deployment strategies, and the modularization approach adopted using **Azure Bicep** templates. The goal is to ensure clarity, maintainability, and scalability across Development (Dev), User Acceptance Testing (UAT), and Production (Prod) environments.
@@ -23,6 +27,7 @@ This document provides a comprehensive overview of our infrastructure setup for 
   - [Secrets Management](#secrets-management)
   - [Rollback Strategy](#rollback-strategy)
   - [Security and Compliance](#security-and-compliance)
+- [Monitoring and Alerting](#monitoring-and-alerting)
 - [Static Web App Deployment](#static-web-app-deployment)
 - [Deployment Process](#deployment-process)
 - [Links to Code Repositories](#links-to-code-repositories)
@@ -50,7 +55,7 @@ The infrastructure is broken down into logical components, each encapsulated wit
 - **`modules/`**: The root directory for all modular templates.
   - **`applications/`**: Contains modules related to application services, such as App Service Plans and App Services for the frontend and backend.
   - **`databases/`**: Contains modules for deploying database resources, including PostgreSQL Flexible Server and databases.
-  - **`infrastructure/`**: Contains shared infrastructure modules, such as Key Vault, Log Analytics Workspace, Application Insights, and Azure Container Registry.
+  - **`infrastructure/`**: Contains shared infrastructure modules, such as Key Vault, Log Analytics Workspace, Application Insights, Azure Container Registry, and Logic Apps.
 - **`main.bicep`**: Orchestrates the deployment of all modules based on input parameters.
 
 #### Benefits of Modularization
@@ -65,8 +70,7 @@ The infrastructure is broken down into logical components, each encapsulated wit
 
 The following diagram illustrates the dependencies between modules:
 
-![image(5)](https://github.com/user-attachments/assets/92a9b070-910e-45c5-9441-1105de680d01)
-
+![Resource Dependency Graph](https://github.com/user-attachments/assets/92a9b070-910e-45c5-9441-1105de680d01)
 
 ---
 
@@ -83,7 +87,7 @@ We have defined separate configurations for each environment—**Development (De
 #### Key Configurations
 
 - **Resource Names**: Prefixed with the environment identifier (e.g., `money404-asp-dev` for Dev).
-- **Locations**: Azure regions are chosen based on proximity and compliance requirements.
+- **Locations**: Azure regions are chosen based on proximity and compliance requirements (e.g., `West Europe` for Prod).
 - **SKUs and Tiers**: Adjusted based on the environment to optimize cost and performance.
 - **Access and Security**:
   - **Key Vault Role Assignments**: Assigns appropriate roles to service principals and groups.
@@ -91,6 +95,8 @@ We have defined separate configurations for each environment—**Development (De
 - **Monitoring and Diagnostics**:
   - **Application Insights and Log Analytics**: Configured for comprehensive monitoring.
   - **Diagnostic Settings**: Enabled for services like Key Vault, ACR, and PostgreSQL.
+  - **Logic App Name**: Introduced `logicAppName` parameter to specify the name of the Logic App used for alerting.
+  - **Slack Webhook URL**: Added `slackWebhookUrl` parameter to securely store the Slack webhook URL used for sending alerts.
 
 #### Rationale for Using JSON Parameter Files
 
@@ -128,12 +134,14 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **File**: [backend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/backend-app-service.bicep)
 - **Parameters**:
   - `location`: Deployment location.
+  - `environmentType`: Environment type (`nonprod`, `prod`).
   - `appServiceAPIAppName`: Name of the backend App Service.
   - `appServicePlanId`: ID of the associated App Service Plan.
   - `containerRegistryName`: Name of the Azure Container Registry.
   - `dockerRegistryUserName`, `dockerRegistryPassword`: Credentials for the container registry.
   - `dockerRegistryImageName`, `dockerRegistryImageTag`: Docker image details.
   - `appSettings`: Array of custom environment variables for the backend service.
+  - `appCommandLine`: Command line to run when starting the app.
   - `appInsightsInstrumentationKey`, `appInsightsConnectionString`: Monitoring configurations.
 - **Outputs**:
   - `appServiceAppHostName`: Hostname of the App Service.
@@ -142,22 +150,25 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
   - `appServiceAPIAppName`
   - `dockerRegistryImageTag`
   - `appSettings`
+- **Features**:
+  - **Environment-Specific Settings**: The `alwaysOn` property is set to `true` in Production for high availability.
+  - **Managed Identity**: Uses a system-assigned managed identity for secure access to resources.
+  - **Secure Configuration**: Retrieves container registry credentials securely from Azure Key Vault.
 
 #### 3. **frontend-app-service.bicep**
 
-- **Purpose**: Deploys the frontend service for the website.
+- **Purpose**: Deploys the frontend service, including a Static Web App.
 - **File**: [frontend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep)
 - **Parameters**:
-  - `location`: Deployment location.
   - `appServiceAppName`: Name of the frontend App Service.
+  - `location`: Deployment location.
   - `appServicePlanId`: ID of the associated App Service Plan.
-  - `appCommandLine`: Command line to run for the App Service.
   - `appInsightsInstrumentationKey`, `appInsightsConnectionString`: Monitoring configurations.
+  - `appCommandLine`: Command line to run for the App Service.
   - `name`: Name of the Static Web App.
   - `locationswa`: Deployment location for the Static Web App.
   - `sku`: SKU tier for the Static Web App (`Free`, `Standard`).
 - **Outputs**:
-  - `appServiceAppHostName`: Hostname of the App Service.
   - `staticWebAppUrl`: URL of the Static Web App.
   - `staticWebAppEndpoint`: Endpoint of the Static Web App.
   - `staticWebAppResourceName`: Resource name of the Static Web App.
@@ -165,6 +176,9 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
   - `appServiceAppName`
   - `name`
   - `sku`
+- **Features**:
+  - Focuses on deploying the Static Web App for the frontend.
+  - Integrated with Application Insights for monitoring.
 
 ### Databases Modules
 
@@ -184,6 +198,9 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **Environment-Specific Configurations**:
   - `postgresSQLServerName`
   - `environmentType`
+- **Features**:
+  - Configures the server based on the environment type.
+  - Enables monitoring through Log Analytics Workspace.
 
 #### 2. **postgres-sql-database.bicep**
 
@@ -191,11 +208,14 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **File**: [postgres-sql-database.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/databases/postgres-sql-database.bicep)
 - **Parameters**:
   - `postgresSQLServerName`: Name of the existing PostgreSQL server.
-  - `postgresSQLDatabaseName`: Name of the database to create.
+  - `postgresSQLDatabaseName`: Name of the database to create (defaults to `ie-bank-db`).
 - **Outputs**:
   - `postgresSQLDatabaseName`: Name of the PostgreSQL database.
 - **Environment-Specific Configurations**:
   - `postgresSQLDatabaseName`
+- **Features**:
+  - Simplifies database deployment with default naming.
+  - Ensures compatibility with the backend application.
 
 ### Infrastructure Modules
 
@@ -206,14 +226,18 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **Parameters**:
   - `location`: Deployment location.
   - `keyVaultName`: Name of the Key Vault.
+  - `enableVaultForDeployment`: Flag to enable Key Vault for deployment usage.
   - `roleAssignments`: Array of role assignments for the Key Vault.
   - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace for diagnostics.
 - **Outputs**:
   - `keyVaultName`: Name of the Key Vault.
-  - `keyVaultResourceId`: Resource ID of the Key Vault.
+  - `keyVaultResourceId`: Resource ID of the key vault.
 - **Environment-Specific Configurations**:
   - `keyVaultName`
   - `roleAssignments`
+- **Features**:
+  - Securely stores secrets and certificates.
+  - Integrated with monitoring services.
 
 #### 2. **log-analytics.bicep**
 
@@ -227,21 +251,29 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
   - `logAnalyticsWorkspaceName`: Name of the Log Analytics Workspace.
 - **Environment-Specific Configurations**:
   - `name`
+- **Features**:
+  - Centralizes logging and monitoring data.
+  - Supports diagnostic settings for various resources.
 
 #### 3. **app-insights.bicep**
 
-- **Purpose**: Deploys an Application Insights resource.
+- **Purpose**: Deploys an Application Insights resource and configures alerting.
 - **File**: [app-insights.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/app-insights.bicep)
 - **Parameters**:
   - `location`: Deployment location.
   - `appInsightsName`: Name of the Application Insights resource.
   - `logAnalyticsWorkspaceId`: ID of the associated Log Analytics Workspace.
   - `keyVaultResourceId`: Resource ID of the Key Vault for storing secrets.
+  - `slackWebhookUrl`: Secure parameter for Slack webhook URL to send alerts.
 - **Outputs**:
   - `appInsightsInstrumentationKey`: Instrumentation Key for Application Insights.
   - `appInsightsConnectionString`: Connection String for Application Insights.
 - **Environment-Specific Configurations**:
   - `appInsightsName`
+- **Features**:
+  - Monitors application performance and availability.
+  - Configures alert rules for critical metrics.
+  - Integrates with a Logic App to send alerts to Slack.
 
 #### 4. **container-registry.bicep**
 
@@ -257,13 +289,37 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **Environment-Specific Configurations**:
   - `registryName`
   - `sku`
+- **Features**:
+  - Stores Docker images securely.
+  - Admin credentials are stored in Key Vault.
+  - Integrated with monitoring services.
+
+#### 5. **logic-app.bicep**
+
+- **Purpose**: Deploys a Logic App for handling alert notifications.
+- **File**: [logic-app.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/logic-app.bicep)
+- **Parameters**:
+  - `location`: Deployment location.
+  - `logicAppName`: Name of the Logic App.
+  - `slackWebhookUrl`: Secure parameter for Slack webhook URL.
+- **Features**:
+  - Automates alert notifications to Slack.
+  - Uses a workflow defined in `logicAppWorkflow.json`.
+
+#### 6. **logicAppWorkflow.json**
+
+- **Purpose**: Defines the Logic App workflow for sending alerts to Slack.
+- **File**: [logicAppWorkflow.json](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/logicAppWorkflow.json)
+- **Functionality**:
+  - Triggered by alerts from Application Insights.
+  - Sends an HTTP POST request to the Slack webhook URL with the alert message.
 
 ### Orchestrators
 
 #### 1. **database.bicep**
 
 - **Purpose**: Orchestrates the deployment of the PostgreSQL server and database.
-- **File**: [database.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/database.bicep)
+- **File**: [database.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/database.bicep)
 - **Parameters**:
   - `location`: Deployment location.
   - `environmentType`: Environment type (`nonprod`, `prod`).
@@ -274,11 +330,14 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **Environment-Specific Configurations**:
   - `postgresSQLServerName`
   - `postgresSQLDatabaseName`
+- **Features**:
+  - Ensures the database server and database are deployed in the correct order.
+  - Passes necessary parameters to sub-modules.
 
 #### 2. **website.bicep**
 
 - **Purpose**: Orchestrates the deployment of the entire website, including both frontend and backend applications.
-- **File**: [website.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/website.bicep)
+- **File**: [website.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/website.bicep)
 - **Parameters**:
   - `location`: Deployment location.
   - `appServicePlanName`: Name of the App Service Plan.
@@ -290,6 +349,8 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
   - `dockerRegistryImageName`, `dockerRegistryImageTag`: Docker image details.
   - `keyVaultResourceId`: Resource ID of the Key Vault.
   - `logAnalyticsWorkspaceId`: ID of the Log Analytics Workspace.
+  - `sku`: SKU for resources.
+  - `locationswa`: Location for the Static Web App.
 - **Outputs**:
   - `appServiceAppHostName`: Hostname of the frontend App Service.
   - `staticWebAppEndpoint`: Endpoint of the Static Web App.
@@ -299,6 +360,10 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
   - `appServiceAppName`
   - `appServiceAPIAppName`
   - `staticappServiceAppName`
+- **Features**:
+  - Integrates all application modules.
+  - Passes necessary parameters and outputs between modules.
+  - Includes the Logic App deployment for alerting.
 
 #### 3. **main.bicep**
 
@@ -306,6 +371,7 @@ Our infrastructure modules are designed to be reusable and environment-agnostic,
 - **File**: [main.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/main.bicep)
 - **Functionality**:
   - Calls the orchestrators `database.bicep` and `website.bicep`.
+  - Includes the `logicAppModule` for deploying the Logic App.
   - Passes environment-specific parameters to each module.
   - Ensures that dependencies are correctly managed.
 
@@ -334,12 +400,14 @@ As our application evolved, we recognized the need to containerize our backend s
 - **Authentication**: Uses admin credentials retrieved securely from Azure Key Vault.
 - **Environment Variables**: Configured via `appSettings`, including database connection strings and other application settings.
 - **Monitoring**: Integrated with Application Insights for performance monitoring and diagnostics.
+- **Availability**: Configured `alwaysOn` to be enabled in Production for high availability.
 - **Module File**: [backend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/backend-app-service.bicep)
 
 ### Security Enhancements
 
 - **Managed Identity**: Enabled System-Assigned Managed Identity on the backend App Service to securely access Azure resources without embedding credentials.
 - **Key Vault Integration**: Secrets and credentials are retrieved at runtime from Azure Key Vault, enhancing security posture.
+- **Alerting Mechanisms**: Implemented alerting via Application Insights and Logic Apps to monitor critical metrics and send notifications to Slack.
 
 ---
 
@@ -358,7 +426,7 @@ Our workflows are defined in [`.github/workflows/ie-bank-infra.yml`](https://git
    - **Action**: Deploys to the `Development` environment.
    - **Condition**:
      ```yaml
-     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+     if: github.event_name == 'push' && github.ref != 'refs/heads/main' || github.event_name == 'workflow_dispatch'
      ```
 
 2. **UAT Deployment**:
@@ -385,41 +453,88 @@ Our workflows are defined in [`.github/workflows/ie-bank-infra.yml`](https://git
      github.event_name == 'workflow_dispatch'
      ```
 
-### Jobs and Dependencies
+#### Jobs and Dependencies
 
-- **Validation Jobs**: `validate_dev`, `validate_uat`, `validate_prod`—validate Bicep templates for syntax and schema correctness using `az bicep` commands.
+- **Validation Jobs**: `validate_dev`, `validate_uat`, `validate_prod`—validate Bicep templates for syntax and schema correctness using `az bicep` commands. We employ azure pre-flight unit testing for our modules for each individual environment.
 - **Linting Job**: `lint`—runs the Bicep linter to enforce code quality.
 - **Security Scanning**: `build`—uses **Checkov** for static code analysis to detect security vulnerabilities.
 - **Deployment Jobs**:
   - **`deploy-dev`**:
-    - **Needs**: `build`, `lint`, `validate_dev`.
-    - **Environment**: `Development`.
-    - **File**: [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
+    - **Needs**: `build`, `lint`, `validate_dev`
+    - **Environment**: `Development`
+    - **File**: [ie-bank-infra.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
   - **`deploy-uat`**:
-    - **Needs**: `build`, `lint`, `validate_uat`.
-    - **Environment**: `UAT`.
-    - **File**: [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/banking_infra/blob/main/.github/workflows/ie-bank-infra.yml)
+    - **Needs**: `build`, `lint`, `validate_uat`
+    - **Environment**: `UAT`
+    - **File**: [ie-bank-infra.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
   - **`deploy-prod`**:
-    - **Needs**: `build`, `lint`, `validate_prod`, `deploy-uat`.
-    - **Environment**: `Production`.
-    - **File**: [`.github/workflows/ie-bank-infra.yml`](https://github.com/smaswin21/banking_infra/blob/main/.github/workflows/ie-bank-infra.yml)
+    - **Needs**: `build`, `lint`, `validate_prod`, `deploy-uat`
+    - **Environment**: `Production`
+    - **File**: [ie-bank-infra.yml](https://github.com/smaswin21/Banking_Infra/blob/main/.github/workflows/ie-bank-infra.yml)
+
+#### Workflow Enhancements
+
+- **Slack Integration**: Added `slackWebhookUrl` as a secure variable to pass the Slack webhook URL to deployment jobs.
+- **Logic App Deployment**: Integrated the deployment of the Logic App within the deployment jobs.
+- **Improved Conditions**: Updated conditions to better handle different event triggers.
 
 ### Secrets Management
 
-- **GitHub Secrets**: Used to store sensitive information required by GitHub Actions (e.g., Azure credentials).
+- **GitHub Secrets**: Used to store sensitive information required by GitHub Actions (e.g., Azure credentials, `slackWebhookUrl`).
 - **Azure Key Vault**: Stores secrets like ACR credentials and Application Insights keys, accessed securely using managed identities.
+- **Secure Configuration**: Ensures that sensitive information is not exposed in code or logs.
 
 ### Rollback Strategy
 
 - **Version Control**: All infrastructure code is tracked in Git, enabling easy rollback to previous stable versions.
 - **IaC**: Allows us to redeploy previous configurations consistently.
 - **Automated Testing**: Validation and linting steps catch issues before deployment.
+- **Monitoring**: Enhanced alerting mechanisms allow for quicker detection and rollback if issues are identified post-deployment.
 
 ### Security and Compliance
 
 - **Access Controls**: Implemented Role-Based Access Control (RBAC) for resources.
 - **Compliance Checks**: Infrastructure code is scanned for compliance with organizational policies using **Checkov**.
 - **Secure Secrets Management**: All secrets are stored in Azure Key Vault and accessed via managed identities.
+- **Alerting and Monitoring**:
+  - Configured Application Insights to monitor critical performance metrics.
+  - Implemented alert rules to trigger Logic Apps, which send notifications to Slack.
+  - Ensured that sensitive information in alerts is handled securely.
+
+---
+
+## Monitoring and Alerting
+
+We have enhanced our monitoring and alerting capabilities to proactively identify and address issues.
+
+### Application Insights
+
+- **Purpose**: Monitors application performance, availability, and user behavior.
+- **Features**:
+  - Collects telemetry data from applications.
+  - Configured with alert rules for critical metrics.
+  - Integrated with Logic Apps for alert notifications.
+
+### Alert Rules
+
+- **Login Response Time Alert**:
+  - **Name**: `Login-SLO-Alert`
+  - **Description**: Triggers when login response time exceeds 5 seconds.
+  - **Severity**: 2
+  - **Action**: Sends an alert via the Logic App to Slack.
+
+- **Page Load Time Alert**:
+  - **Name**: `Page-Load-Time-Alert`
+  - **Description**: Triggers when page load time exceeds 5 seconds.
+  - **Severity**: 4
+  - **Action**: Sends an alert via the Logic App to Slack.
+
+### Logic App Integration
+
+- **Logic App**: Automates the process of sending alerts to Slack.
+- **Workflow**: Defined in `logicAppWorkflow.json`.
+- **Trigger**: Activated by alert rules in Application Insights.
+- **Action**: Sends a formatted message to the specified Slack channel.
 
 ---
 
@@ -449,7 +564,10 @@ We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our St
   - Utilizes environment-specific parameter files for customization.
 - **Output Variables**:
   - `staticWebAppEndpoint`: Used to configure the frontend application deployment.
-- **Module File**: [frontend-app-service.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/applications/frontend-app-service.bicep)
+- **Features**:
+  - Removed redundant App Service deployment for the frontend.
+  - Focused solely on deploying the Static Web App for the frontend.
+  - Integrated with Application Insights for monitoring.
 
 ---
 
@@ -487,12 +605,14 @@ We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our St
 8. **Monitoring and Verification**:
    - Post-deployment, Application Insights and Log Analytics monitor the application.
    - Any issues are addressed promptly.
+   - Alerts are sent via Slack if critical thresholds are breached.
 
 ### Continuous Improvement
 
 - **Feedback Loop**: Monitoring data informs infrastructure improvements.
 - **Scalability**: Infrastructure can be scaled based on performance metrics.
 - **Updates**: Modules can be updated independently to introduce new features or optimizations.
+- **Alerting**: Implemented proactive alerting mechanisms to quickly identify and resolve issues.
 
 ---
 
@@ -512,6 +632,8 @@ We created a custom Bicep module, `frontend-app-service.bicep`, to deploy our St
     - [log-analytics.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/log-analytics.bicep)
     - [app-insights.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/app-insights.bicep)
     - [container-registry.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/container-registry.bicep)
+    - [logic-app.bicep](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/logic-app.bicep)
+    - [logicAppWorkflow.json](https://github.com/smaswin21/Banking_Infra/blob/main/modules/infrastructure/logicAppWorkflow.json)
 - **Parameter Files**:
   - **Development**: [dev.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/dev.parameters.json)
   - **UAT**: [uat.parameters.json](https://github.com/smaswin21/Banking_Infra/blob/main/parameters/uat.parameters.json)
@@ -526,5 +648,6 @@ By adopting this modular and automated approach to infrastructure deployment, we
 
 ---
 
-> [!NOTE]
-> For more detailed information on our infrastructure release strategy, please refer to the [Infrastructure Release Strategy](https://smaswin21.github.io/Banking_Infra/docs/infrastructure-release-strategy) section in our Design Document on GitHub Pages.
+> **Note**: For more detailed information on our infrastructure release strategy, please refer to the [Infrastructure Release Strategy](https://smaswin21.github.io/Banking_Infra/docs/infrastructure-release-strategy) section in our Design Document on GitHub Pages.
+
+---
