@@ -47,7 +47,7 @@ By categorizing alerts in this way, the team can efficiently monitor and address
 
 The alert process begins with alert rules, which monitor your data and detect signals indicating anomalies in specific resources. If these conditions are met, an alert is triggered. Once triggered, the alert initiates the associated action group and updates the alert state. Action groups are then responsible for notifying relevant team members through channels like voice calls, SMS, emails, or even automated workflows. This ensures that incidents are identified early and handled promptly to minimize the impact on the users.
 
-# Alert Criteria
+## Alert Criteria
 
 | **Alert Type**         | **Criteria**                                | **Priority** |
 |-------------------------|---------------------------------------------|--------------|
@@ -58,7 +58,7 @@ The alert process begins with alert rules, which monitor your data and detect si
 | **Page Load Time**      | Load time drops under 2 sec multiple times  | Low          |
 
 
-# #Incident Response Implementation Strategy
+## Incident Response Implementation Strategy
 
 For the incident response implementation strategy, we utilize a suite of Azure-based monitoring tools to ensure efficient detection, management, and mitigation of incidents. These tools are pivotal in maintaining the health, availability, and performance of the **Money404 Bank** application while supporting a proactive incident response.
 
