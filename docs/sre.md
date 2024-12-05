@@ -6,16 +6,13 @@ The Site Reliability Engineer focuses on ensuring system reliability, uptime, an
 
 ### Table of Contents
 
-- [Monitoring and Observability](#monitoring-and-observability)
-- [Incident Response](#incident-response)
-- [Reliability and Resilience Design](#reliability-and-resilience-design)
-- [Automation and Optimization](#automation-and-optimization)
+
 
 ---
 
 # Implemented Incident Report Strategy
 
-An incident report is an extremely important factor that can ensure that teams can effectively manage and mitigate incidents. An **incident** is an unplanned interruption to a service or a reduction in the quality of service. 
+An incident report is an extremely important factor that can ensure that teams can effectively manage and mitigate incidents. An incident is an unplanned interruption to a service or a reduction in the quality of service. The aim with an incident report is to respond to and identify incidents, minimize their impact across application and most importantly restore the normal service of operation as quickly as possible. 
 
 The aim of an incident report is to:
 - Respond to and identify incidents.
