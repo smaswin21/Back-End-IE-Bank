@@ -4,7 +4,96 @@
 
 The Site Reliability Engineer focuses on ensuring system reliability, uptime, and performance. This document includes processes for monitoring, incident response, and operational optimization.
 
-### Table of Contents
+# Monitoring strategy
+# Monitoring Strategy and SLA, SLO, and SLI Definitions for IE Bank Application
+
+As the Site Reliability Engineer overseeing the **IE-bank web application**, it is imperative to establish a comprehensive monitoring strategy and define clear **Service Level Agreements (SLAs)**, **Service Level Objectives (SLOs)**, and **Service Level Indicators (SLIs)**. This ensures that the quality and performance of the application meet different stakeholder goals and expectations. The monitoring strategy and SLAs, SLIs, and SLOs are part of the broader concept of software maintenance, which ensures “business continuity of critical services or functions.” This section elaborates on the proposed monitoring strategy and specific SLAs, SLOs, and SLIs pertinent to the **IE-bank application**, aligning with the goals of operational resilience, application reliability, and stakeholder satisfaction.
+
+---
+
+## Establishing SLA, SLO, and SLI
+
+### What Are SLA, SLO, and SLI?
+
+- **Service Level Agreements (SLAs)**: Contracts between two parties outlining performance expectations and financial penalties if these expectations are unmet. Initially, SLAs were often disregarded, but with the introduction of penalties, companies have invested in and researched this field extensively.
+- **Service Level Objectives (SLOs)**: Specific performance targets that support achieving the SLA, setting clear expectations for service delivery.
+- **Service Level Indicators (SLIs)**: Metrics assessing the quality and dependability of the service, such as latency, availability, or error rate, which ensure SLO compliance.
+
+Together, SLAs, SLOs, and SLIs provide a framework for monitoring, ensuring a high-quality user experience.
+
+---
+
+## SLAs for IE Bank Application
+
+The IE Bank application has two primary SLAs:
+
+1. **Agreement with Azure**: 
+   - Covers Azure services like Azure App Service, Azure Container Registry, Azure Key Vault, and Azure Database for PostgreSQL. These form the baseline for additional agreements.
+2. **Agreement with the Client**: 
+   - Establishes service levels for the IE Bank application and ensures alignment with client requirements.
+
+### Service Level Agreement with Azure
+
+| **Azure Service**         | **SLA**  | **Description**                                               |
+|----------------------------|----------|---------------------------------------------------------------|
+| Azure App Service          | 99.95%   | Ensures availability for web hosting.                        |
+| Azure Database for PostgreSQL | 99.99% | Guarantees high availability for database operations.        |
+| Azure Key Vault            | 99.9%    | Provides secure storage and management of application secrets.|
+| Azure Container Registry   | 99.9%    | Ensures reliable storage and management of container images. |
+| Azure Static Web Apps      | 99.95%   | Ensures availability for hosting static content and APIs.    |
+
+### SLA for IE Bank Application
+
+The IE Bank application guarantees the following service levels:
+
+- **Availability**: 99.0% uptime for User and Admin Portals, covering core functionalities like user login, transaction processing, and account data access.
+- **Performance**: 95% of all API requests processed within 500 milliseconds.
+- **Reliability**: Error rate below 1%, with efficient management of downtime to minimize user impact.
+
+---
+
+## SLOs to Achieve SLA
+
+To meet SLA commitments, the following SLOs are defined:
+
+1. **Uptime**: 90% uptime for User and Admin Portals.
+2. **API Response Time**: 95% of API requests processed within 500 milliseconds.
+3. **Database Uptime**: 90% uptime to support backend operations.
+4. **Error Rate**: Below 1%.
+5. **Page Load Time**: Under 2 seconds for seamless user experience.
+
+### Infrastructure and Modularization Support
+
+- **Modularization**: Independent, interchangeable modules allow updates and troubleshooting without affecting the entire system. This strategy enhances flexibility, faster deployments, and simpler maintenance.
+
+---
+
+## SLIs for Monitoring Success
+
+SLIs monitor specific metrics related to system performance:
+
+| **Metric**          | **Monitoring Tool**                     | **Target**                         |
+|----------------------|-----------------------------------------|-------------------------------------|
+| **Uptime**           | Azure Monitor                          | 90% uptime for User/Admin Portals. |
+| **API Performance**  | Application Insights                   | 95% of requests under 500ms.       |
+| **Database Uptime**  | Azure Database Monitoring Tools        | 90% uptime.                        |
+| **Error Rate**       | Log Analytics Workspace, App Insights  | Below 1%.                          |
+| **Page Load Time**   | Application Insights                   | Under 2 seconds.                   |
+
+---
+
+## Continuous Monitoring and Reporting
+
+To ensure compliance with SLAs and SLOs:
+
+- **Tools**: Azure Monitor, Application Insights, and Log Analytics Workspace collect real-time data.
+- **Dashboards**: Azure Workbooks provide a real-time view of metrics for prompt issue resolution.
+- **Alerts**: Configured to notify the team when thresholds are breached.
+- **Reports**: Monthly performance reports detail SLO metrics and SLA deviations, reviewed in regular meetings to identify improvement opportunities.
+
+This cycle of monitoring, reporting, and optimization ensures IE Bank delivers a high-quality, reliable, and responsive service to its users.
+
+
 
 
 
