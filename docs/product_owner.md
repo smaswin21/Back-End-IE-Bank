@@ -7,7 +7,6 @@
 - [Minimum Viable Product (MVP)](#minimum-viable-product-mvp)
 - [Objective and Key Results (OKRs)](#objective-and-key-results-okrs)
 - [Product Backlog](#product-backlog)
-  - [User Stories and Acceptance Criteria](#user-stories-and-acceptance-criteria)
 - [Product Roadmap](#product-roadmap)
 - [Sprint Backlog](#sprint-backlog)
 - [Sprint Planning Ceremony](#sprint-planning-ceremony)
@@ -153,27 +152,13 @@ Link for [Product Backlog](https://dev.azure.com/tshawwa/Software-Development-an
 
 ## Product Roadmap
 
-The roadmap outlines the high-level timeline for delivering the product's major milestones:
-
-1. **Phase 1**: Development of Admin Portal and User Portal core functionalities.
-2. **Phase 2**: Integration of fund transfer features and admin dashboard enhancements.
-3. **Phase 3**: Deployment to production and user acceptance testing.
+Link for [Product Roadmap](https://github.com/users/talineshawwaa/projects/3/views/4)
 
 ---
 
 ## Sprint Backlog
 
-The sprint backlog consists of the prioritized tasks planned for the current sprint.
-
-### Sprint 1 Goals
-- Develop CRUD functionalities for the Admin Portal.
-- Implement user registration and login for the User Portal.
-- Set up CI/CD pipelines for Dev and UAT environments.
-
-### Sprint 2 Goals
-- Add fund transfer functionality with validation checks.
-- Enhance the admin dashboard with filtering options.
-- Finalize production deployment.
+Link for [Sprint Backlog](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_sprints/backlog/Software-Development-and-Devops-Assignment%20Team/Software-Development-and-Devops-Assignment/Sprint%201) on Azure DevOps Boards
 
 ---
 
