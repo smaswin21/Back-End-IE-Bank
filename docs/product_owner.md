@@ -147,40 +147,7 @@ This allows users to access their account management portals, and allows them to
 
 ## Product Backlog
 
-The product backlog is a dynamic list of features, enhancements, and fixes that prioritize the most valuable items for development.
-
-### User Stories and Acceptance Criteria
-
-#### Admin Portal
-
-**User Story**:  
-_As an administrator, I want to manage user accounts so that I can keep the system updated._
-
-**Acceptance Criteria**:
-1. Admins can log in securely using default credentials.
-2. Admins can perform CRUD operations on user accounts.
-
----
-
-#### User Portal
-
-**User Story**:  
-_As a new user, I want to register for an account so that I can manage my banking details._
-
-**Acceptance Criteria**:
-1. Users can register with a username, password, and country.
-2. System generates a unique account number upon registration.
-3. Passwords are securely hashed and validated.
-
----
-
-**User Story**:  
-_As a user, I want to transfer funds to other accounts so that I can send money easily._
-
-**Acceptance Criteria**:
-1. Users can initiate fund transfers with recipient account numbers.
-2. Transfers are only processed if sufficient balance is available.
-3. Confirmation is provided after successful transactions.
+Link for [Product Backlog](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_backlogs/backlog/Software-Development-and-Devops-Assignment%20Team/Epics) on Azure DevOps Boards.
 
 ---
 
