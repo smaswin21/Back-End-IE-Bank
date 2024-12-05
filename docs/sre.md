@@ -58,7 +58,7 @@ The alert process begins with alert rules, which monitor your data and detect si
 | **Page Load Time**      | Load time drops under 2 sec multiple times  | Low          |
 
 
-# Incident Response Implementation Strategy
+# #Incident Response Implementation Strategy
 
 For the incident response implementation strategy, we utilize a suite of Azure-based monitoring tools to ensure efficient detection, management, and mitigation of incidents. These tools are pivotal in maintaining the health, availability, and performance of the **Money404 Bank** application while supporting a proactive incident response.
 
@@ -98,7 +98,7 @@ Future enhancements to the monitoring and incident response strategy will focus 
 
 ---
 
-# Alert Implementation Details
+## Alert Implementation Details
 
 ### Logic App Integration
 
