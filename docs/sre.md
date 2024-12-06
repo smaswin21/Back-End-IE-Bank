@@ -443,5 +443,142 @@ To avoid security vulnerabilities:
 
 By integrating these tools and best practices, the incident response implementation strategy ensures robust monitoring, efficient incident handling, and improved system reliability for Money404 Bank.
 
+# Implement a reliability design
 
+## Monitoring Design and Implementation
+
+### Telemetry Tools:
+
+Azure Application Insights (App Insights):
+- Provides end-to-end monitoring for all application components (frontend, backend, and infrastructure).
+- Tracks request/response cycles, dependency performance, and logs custom metrics.
+
+Azure Log Analytics:
+- Serves as a centralized telemetry aggregation platform to correlate metrics, logs, and traces.
+- Offers advanced diagnostics using KQL (Kusto Query Language) for deep insights into system behavior.
+
+Workbook Dashboards:
+- Interactive dashboards designed to provide visibility into key metrics such as error rates, system health, and throughput.
+- Aggregates data from Log Analytics for operational insights.
+
+### Key Metrics:
+
+Frontend:
+- Page load times, HTTP request error rates, and user session statistics.
+
+Backend:
+- API latency, container CPU/memory utilization, and pod availability in Azure Kubernetes Service (AKS).
+
+Database:
+- Query execution times, deadlock occurrences, and connection pool usage.
+
+### Implementation Details:
+- Configure Diagnostic Settings for all Azure resources to route logs and metrics to App Insights and Log Analytics.
+- Leverage Azure Monitor alerts to trigger automated actions or notifications based on SLA-critical thresholds (e.g., uptime, request latency).
+- Enable log retention and integration with external analytics tools for long-term analysis.
+
+## Incident Response - Incident Management Process:
+
+### Severity Classification:
+- **Critical (Sev1):** Outages affecting critical functionalities or all users.
+- **Medium (Sev2):** Partial degradation of service or performance issues impacting key features.
+- **Low (Sev3):** Minor bugs or intermittent issues with minimal user impact.
+
+### Automation:
+- Configure App Insights alerts to automatically create incidents in Azure DevOps or notify teams via Slack.
+- Use escalation policies to ensure critical issues are promptly addressed.
+- Maintain a 24/7 on-call rotation for Site Reliability Engineers (SREs).
+
+### Runbooks:
+- Predefined, detailed steps for incident resolution, such as:
+  - Scaling out database instances during high demand.
+  - Rolling back failed deployments with blue-green strategies.
+  - Restarting unhealthy containers in AKS.
+- Automate incident responses using runbook integration with alerting systems.
+
+### Post-Incident Reviews (PIRs):
+- Conduct Root Cause Analysis (RCA) within 24 hours of incident resolution.
+- Identify recurring patterns and implement systemic fixes.
+- Maintain a shared knowledge base for future reference.
+
+## Capacity Design
+
+### Frontend (Static Web App):
+- Implement Azure App Service auto-scaling based on metrics such as memory and request volume.
+- Use a CDN (e.g., Azure Front Door) for caching and reducing latency globally.
+
+### Backend (Containerized):
+- Orchestrate with Azure Kubernetes Service (AKS), leveraging Horizontal Pod Autoscaling (HPA) for dynamic scaling.
+- Use Azure Container Registry (ACR) for seamless container image distribution.
+
+### Database:
+- Leverage elastic pools in Azure SQL Database to dynamically allocate resources across workloads.
+- Use scaling strategies for PostgreSQL in Flexible Server environments to handle spikes.
+
+### Supporting Services:
+- **Key Vault:** Monitor request throughput to prevent throttling during authentication peaks.
+- **Container Registry:** Enable zone redundancy to ensure high availability.
+
+## Performance Efficiency
+
+### Optimization Strategies:
+- Utilize Content Delivery Networks (CDNs) to reduce latency and enhance frontend performance.
+- Optimize API performance with asynchronous calls and caching.
+- Employ database indexing and partitioning for faster query execution.
+
+### Monitoring Tools:
+- Use Application Insights for dependency mapping and identifying performance bottlenecks.
+- Monitor database performance with Azure SQL Insights and tuning recommendations.
+
+### Load Testing:
+- Perform load testing with Azure Load Testing to simulate traffic scenarios and refine resource limits.
+- Use metrics to benchmark and ensure SLAs are met under stress conditions.
+
+## Cost Optimization and FinOps
+
+### Cost Management:
+- Enable Azure Cost Management dashboards to monitor spending across all resources.
+- Implement budgets and alerts to track and control expenses.
+
+### Optimization Techniques:
+- Use Reserved Instances for workloads with predictable patterns to reduce operational costs.
+- Enable auto-scaling for dynamic workloads to avoid overprovisioning.
+- Regularly review usage metrics and eliminate redundant resources (e.g., unused VMs, storage accounts).
+
+### Collaboration:
+- Collaborate with the FinOps team to review Azure cost breakdowns.
+- Use resource tagging policies to allocate costs across teams accurately.
+
+## Operational Excellence and Release Engineering
+
+### Release Strategy:
+- Implement CI/CD pipelines using Azure DevOps with automated builds and deployments.
+- Leverage blue-green deployments for zero-downtime releases.
+- Use feature flags for controlled rollouts and instant rollback capabilities.
+
+### Operational Practices:
+- Maintain environment parity between development, staging, and production environments.
+- Conduct operational readiness checks before major updates.
+
+### Collaboration:
+- Work with development and infrastructure teams to standardize deployment workflows and tooling.
+- Define release SLAs to minimize disruption.
+
+## Reliability Design
+
+### System Redundancy:
+- Deploy applications across multiple Azure regions with geo-redundancy.
+- Use Azure Traffic Manager for seamless failover and load balancing.
+
+### Backup and Recovery:
+- Schedule automated backups for databases using Azure Backup.
+- Regularly test disaster recovery plans to validate failover readiness.
+
+### Error Budgeting:
+- Define an acceptable error budget (e.g., 99.95% uptime SLA) to guide feature releases and incident response priorities.
+- Use App Insights to monitor and report SLA adherence.
+
+### Improvement Circuits:
+- Run regular chaos engineering experiments to test system resilience.
+- Leverage post-mortem data to prioritize improvements in system reliability.
 
