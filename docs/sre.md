@@ -326,7 +326,7 @@ The aim of an incident report is to:
 
 The incident report strategy that will be followed and was chosen is shown in the diagram below:
 
-<img width="629" alt="Screenshot 2024-12-05 at 10 55 20" src="https://github.com/user-attachments/assets/cdf7317e-6b5d-4ac0-927c-0d3eff56de5b">
+<img width="1000" alt="Screenshot 2024-12-05 at 10 55 20" src="https://github.com/user-attachments/assets/cdf7317e-6b5d-4ac0-927c-0d3eff56de5b">
 
 The incident response strategy seen above is designed to ensure the efficient management of anomalies and the prompt response to any service disruptions to meet SLA, SLO, and SLI requirements. It involves constant monitoring to track key service levels (SLA, SLO, SLI) and identify anomalies like increased latency, high error rates, or decreased availability. The designed strategy will always be monitoring and there will be alerts set up, as soon as something falls under the threshold expected. Azure Alerts are triggered based on these anomalies and sent to Slack channels, allowing for real-time notification to the response team. Upon receiving an alert, the team determines if the anomaly is a security incident, and if so, appropriate actions are taken. Automated self-healing processes are used where applicable. If incidents cannot be resolved automatically, the ChatOps approach is activated, allowing the team to use Slack for direct interactions with monitoring tools to resolve the issue. Impacted users and stakeholders are kept informed throughout the incident response. Once the incident is resolved, a post-mortem analysis is conducted to identify the root cause and document lessons learned to prevent future incidents. 
 
