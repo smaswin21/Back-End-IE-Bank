@@ -105,7 +105,7 @@ The primary benefits of a service map include:
 4. Defining Policies and Settings: Determining the necessary policies and configurations required for the service's operation.
 5. Establishing Escalation Paths: Documenting escalation processes and contact information for efficient issue resolution.
 
-<img width="538" alt="Screenshot 2024-12-06 at 16 33 55" src="https://github.com/user-attachments/assets/c171962e-6e2c-4cda-82c2-1641604f81ac">
+<img width="1000" alt="Screenshot 2024-12-06 at 16 33 55" src="https://github.com/user-attachments/assets/c171962e-6e2c-4cda-82c2-1641604f81ac">
 
 This service mapping represents the architecture of a cloud-based application environment designed for efficient logging, monitoring, and analysis. The system is structured hierarchically, with dependencies flowing from core services to telemetry and analytics, culminating in a visualization layer. The App Service manages both the frontend (static web app) and backend (containerized application). Diagnostic settings act as a centralized logging and telemetry hub, connecting key services such as the container registry, key vault, and database to the telemetry pipeline. Data flows through App Insights for telemetry collection, then to Log Analytics for aggregation, and finally to a workbook for visualization and analysis.
 
