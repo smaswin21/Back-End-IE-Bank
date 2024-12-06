@@ -4,7 +4,6 @@
 
 The Site Reliability Engineer focuses on ensuring system reliability, uptime, and performance. This document includes processes for monitoring, incident response, and operational optimization.
 
-# Monitoring strategy
 # Monitoring Strategy and SLA, SLO, and SLI Definitions for IE Bank Application
 
 As the Site Reliability Engineer overseeing the **IE-bank web application**, it is imperative to establish a comprehensive monitoring strategy and define clear **Service Level Agreements (SLAs)**, **Service Level Objectives (SLOs)**, and **Service Level Indicators (SLIs)**. This ensures that the quality and performance of the application meet different stakeholder goals and expectations. The monitoring strategy and SLAs, SLIs, and SLOs are part of the broader concept of software maintenance, which ensures “business continuity of critical services or functions.” This section elaborates on the proposed monitoring strategy and specific SLAs, SLOs, and SLIs pertinent to the **IE-bank application**, aligning with the goals of operational resilience, application reliability, and stakeholder satisfaction.
@@ -63,6 +62,7 @@ To meet SLA commitments, the following SLOs are defined:
 5. **Page Load Time**: Under 2 seconds for seamless user experience.
 
 ### Infrastructure and Modularization Support
+These SLO would have a hard time being recorded and met within the proper Infrastructure support, therefore a lot of communication between the Infrastructure engineer is crucial. There are many strategies and changes that will ensure the best experience for the end user. For example, modularization was employed. Modularization is a strategy where system components are broken down into independent, interchangeable modules. This allows teams to make updates, deploy changes, and troubleshoot issues more efficiently without affecting the entire system. By employing modularization, the IE Bank application benefits from increased flexibility, faster deployments, and simpler maintenance. Each module, such as the user interface, database, or authentication service, can be developed, tested, and scaled independently, leading to more robust and agile infrastructure. This modular approach not only supports the achievement of SLOs but also simplifies the process of monitoring and optimizing each component individually, ultimately improving the user experience.
 
 - **Modularization**: Independent, interchangeable modules allow updates and troubleshooting without affecting the entire system. This strategy enhances flexibility, faster deployments, and simpler maintenance.
 
@@ -94,7 +94,168 @@ To ensure compliance with SLAs and SLOs:
 This cycle of monitoring, reporting, and optimization ensures IE Bank delivers a high-quality, reliable, and responsive service to its users.
 
 
+# Implementation of monitoring strategy 
 
+## Step 1: Modular Infrastructure with Parameterization
+
+## Objective:
+To enable reusable, dynamic, and environment-specific deployments for dev, uat, and prod environments while minimizing manual intervention and ensuring consistency.
+
+## Technical Approach:
+
+### Environment Parameterization:
+- **Resource configurations** (e.g., App Service Plan, FE, BE, PostgreSQL) were parameterized to support dynamic adjustments based on the deployment environment.
+- **Key attributes parameterized**:
+  - Resource names: Prefixed with environment identifiers for clear distinction and to avoid conflicts.
+  - Deployment locations: Tailored for regional optimization.
+  - Performance tiers: Configured to match the scaling needs of each environment.
+
+### Orchestration with a Central Deployment File:
+- A central deployment file aggregated all modular resource definitions, creating a cohesive deployment pipeline.
+- **Interdependencies were dynamically resolved**:
+  - The Log Analytics Workspace ID was passed to Application Insights for telemetry storage and diagnostic settings for log aggregation.
+  - The App Service Plan ID was referenced by FE and BE services for shared hosting.
+
+## Technical Dependencies:
+- Modular design ensured that resource definitions could be updated or extended independently without disrupting the overall deployment pipeline.
+- Parameterization allowed seamless duplication of environments, ensuring reliability across stages of the development lifecycle.
+
+---
+
+# Step 2: Deployment of Log Analytics Workspace
+
+## Objective:
+To establish a centralized monitoring hub capable of aggregating logs and telemetry data from all deployed resources for unified analysis and troubleshooting.
+
+## Technical Approach:
+
+### Centralized Log Aggregation:
+- Configured the Log Analytics Workspace as the core data sink for diagnostic logs and telemetry from:
+  - Application Insights (FE and BE telemetry).
+  - PostgreSQL (query performance and session data).
+  - Key Vault (access patterns and anomalies).
+  - Container Registry (image operations and authentication attempts).
+
+### Retention Policy:
+- A 30-day log retention policy was implemented to balance operational needs and cost considerations.
+
+### Log Routing and Dependencies:
+- Diagnostic settings from all resources routed logs to the Log Analytics Workspace.
+- Application Insights required the Workspace ID for integration, ensuring telemetry data flowed seamlessly into the centralized system.
+
+## Technical Dependencies:
+- **Precedence**: Log Analytics was deployed first as a foundational component, ensuring downstream resources (e.g., Application Insights) could utilize it immediately.
+
+---
+
+# Step 3: Application Insights Integration
+
+## Objective:
+To provide end-to-end telemetry for frontend (FE) and backend (BE) services, tracking performance, dependency interactions, and user-facing errors.
+
+## Technical Approach:
+
+### Telemetry Coverage:
+- **Backend Service**:
+  - Captured API response times and dependency performance (e.g., PostgreSQL query latency).
+  - Tracked HTTP status codes to identify error trends.
+- **Frontend Service**:
+  - Monitored page load times and user interaction metrics.
+  - Captured client-side errors, such as 404 and 500 status codes.
+
+### Integration with Log Analytics:
+- Application Insights was linked to the Log Analytics Workspace, centralizing telemetry and diagnostic logs for unified monitoring.
+
+### Dynamic Configuration via Key Vault:
+- The Application Insights connection string was securely stored in Azure Key Vault and dynamically retrieved by FE and BE App Services during runtime.
+
+---
+
+# Step 4: Secure Management with Key Vault
+
+## Objective:
+To safeguard sensitive information such as database credentials, telemetry connection strings, and Slack Webhook URLs while enabling dynamic access for authorized resources.
+
+## Technical Approach:
+
+### Centralized Secrets Storage:
+- Stored critical secrets:
+  - Application Insights connection strings for FE and BE.
+  - PostgreSQL database credentials for BE.
+  - Slack Webhook URL for the Logic App.
+
+### Dynamic Access via Managed Identities:
+- Authorized resources (e.g., FE, BE, Logic App) accessed secrets dynamically using Azure Managed Identities, eliminating the need for hardcoding.
+
+### Access Monitoring:
+- Configured diagnostic settings on Key Vault to log:
+  - Successful and failed access attempts.
+  - Configuration changes for auditing purposes.
+
+---
+
+# Step 5: Diagnostic Settings
+
+## Objective:
+To enable granular logging for all key resources, ensuring comprehensive visibility into system behavior and performance.
+
+## Technical Approach:
+
+### Resource-Specific Diagnostic Settings:
+- **Container Registry**:
+  - Captured push and pull events.
+  - Logged authentication attempts for tracking access patterns and detecting anomalies.
+- **Key Vault**:
+  - Logged access attempts, including both successful and failed requests, to identify potential security breaches.
+- **PostgreSQL**:
+  - Monitored query execution times, active sessions, and connection statistics.
+  - Logged wait times for resource contention to optimize database performance.
+- **Frontend and Backend App Services**:
+  - Tracked HTTP request/response data and runtime console logs.
+  - Identified API usage patterns and operational errors during execution.
+
+### Log Routing:
+- All logs were routed to the Log Analytics Workspace, ensuring a single source of truth for troubleshooting and performance analysis.
+
+---
+
+# Step 6: Workbook Design and Deployment
+
+## Objective:
+To visualize system metrics and logs, enabling proactive monitoring and real-time insights into system health.
+
+## Technical Approach:
+
+### Manual Creation:
+- Designed and tested a workbook manually to define required metrics and validate log queries.
+
+### Metrics Monitored:
+- **Backend API Performance**:
+  - Monitored response times, HTTP status codes, and error trends for all endpoints.
+- **Frontend Errors**:
+  - Tracked occurrences of 404 and 500 errors to identify UX and operational issues.
+- **Database Metrics**:
+  - Analyzed query latency, throughput, and active connections for database optimization.
+- **Container Registry Activity**:
+  - Visualized push/pull trends to correlate with deployment activities.
+- **Key Vault Access Logs**:
+  - Audited access attempts, identifying unauthorized access patterns.
+
+### Automation:
+- Exported the workbook as an ARM template, refined, and converted into a Bicep file for automated deployment across environments.
+- Dynamically connected the workbook to the Log Analytics Workspace for real-time data visualization.
+
+---
+
+# Conclusion
+
+This implementation as an SRE achieved:
+
+- **Robust Monitoring**: Comprehensive logging and telemetry from all resources via Log Analytics and Application Insights.
+- **Secure Integration**: Centralized secrets management with Key Vault to ensure dynamic and secure access.
+- **Proactive Insights**: Automated workbooks for real-time monitoring of key metrics, enabling early detection of anomalies and performance issues.
+
+This approach ensured the reliability, visibility, and operational efficiency of the infrastructure.
 
 
 ---
