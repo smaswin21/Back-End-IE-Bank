@@ -217,11 +217,89 @@ The IE Bank System has several functional and non-functional requirements that g
 
 ---
 
-## 3. Environment Design
+## Environments Design
 
-The project follows the DTAP (Development, Testing, Acceptance, Production) model to ensure robust development and testing processes.
+### Overview
 
-Each environment is configured using Azure Bicep templates, with environment-specific parameters for consistency and security.
+The IE Bank system employs a **DTAP (Development, Test, Acceptance, Production)** environment structure, ensuring a seamless progression from development to production with minimal risks. Each environment is tailored to specific needs, balancing cost, performance, and security.
+
+---
+
+### Environment Specifications
+
+| **Environment**     | **Purpose**                                                                                      | **Key Features**                                                                                                                                                      | **Cost Optimization**                                                                                                                |
+|----------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| **Development (Dev)** | Provides a sandbox for developers to experiment, learn, and validate changes.                         | - Automated provisioning via GitHub Actions.  <br>- Cost-efficient SKUs for resources.<br>- Wider access for experimentation.<br>- Logs aggregated in Log Analytics. | - Uses low-tier SKUs for services.<br>- Minimal instance count for compute resources.                                               |
+| **UAT**             | Mirrors the production environment for testing by stakeholders and business users.                      | - Production-parity configuration.<br>- Controlled deployments initiated via pull requests.<br>- Limited stakeholder access for validation.<br>- SLA monitoring.    | - Balanced cost-performance ratio with mid-tier SKUs.<br>- Retains enough resources to mimic production behavior.                   |
+| **Production (Prod)**| The live environment hosting the application for end users.                                      | - High availability with redundancy.<br>- Robust monitoring with Application Insights.<br>- Strict access controls.<br>- SLA: 99% uptime.<br>- Optimized scaling.   | - Scaled to handle expected load.<br>- Reserved instances where possible to reduce long-term costs.                                  |
+
+---
+
+### Resource Configurations Per Environment
+
+1. **Azure App Service for Containers**
+   - **Development**: Low-tier (B1) App Service Plan.
+   - **UAT**: Standard-tier App Service Plan for performance testing.
+   - **Production**: Premium-tier App Service Plan with auto-scaling for high availability.
+
+2. **Azure PostgreSQL Database**
+   - **Development**: Single-server instance with basic configuration.
+   - **UAT**: Replicates production settings for realistic testing.
+   - **Production**: High-availability configuration with geo-redundancy and backups.
+
+3. **Azure Static Web Apps**
+   - **Development**: Free-tier for basic functionality testing.
+   - **UAT**: Standard-tier for parity with production.
+   - **Production**: Standard-tier with global CDN for optimized delivery.
+
+4. **Azure Key Vault**
+   - Centralized secrets management across all environments.
+   - Role-based access configured for resource-specific secrets.
+
+5. **Azure Container Registry**
+   - Shared across all environments for efficient image management.
+   - Admin credentials stored securely in Azure Key Vault.
+
+6. **Monitoring and Alerts**
+   - **Development**: Basic logs in Log Analytics.
+   - **UAT & Production**: Application Insights with SLO-specific dashboards and alerts.
+
+---
+
+### Modularization and Parameterization
+
+To enhance reusability and consistency:
+- **Modular Infrastructure as Code (IaC)**: Azure Bicep templates are modularized, with individual modules for App Services, PostgreSQL, Static Web Apps, and Key Vault.
+- **Parameterization**: Each environment has specific JSON parameter files to define resource configurations, names, and SKUs.
+
+---
+
+### DTAP Workflow
+
+1. **Development Environment**:
+   - Triggered on feature branch push via GitHub Actions.
+   - Automated deployment with basic testing and logging.
+
+2. **UAT Environment**:
+   - Deployment initiated via pull requests to the main branch.
+   - Thorough testing, including integration and user acceptance tests.
+
+3. **Production Environment**:
+   - Deploys only upon successful UAT testing and pull request approval.
+   - Includes a rollback strategy to ensure stability.
+
+---
+
+### SLA, SLO, and SLI Compliance
+
+- **Development**: Monitors baseline metrics to detect development issues early.
+- **UAT**: Validates SLIs such as page load times, error rates, and API response times.
+- **Production**: Guarantees SLA compliance with defined SLOs, such as 99% uptime and response times under 500ms.
+
+---
+
+By adopting this structured approach, the environments are designed to facilitate smooth development, rigorous testing, and reliable production operation.
+
 
 ---
 
