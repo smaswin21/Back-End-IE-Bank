@@ -93,6 +93,53 @@ To ensure compliance with SLAs and SLOs:
 
 This cycle of monitoring, reporting, and optimization ensures IE Bank delivers a high-quality, reliable, and responsive service to its users.
 
+---
+
+# Service Mapping 
+Bellow you can see the service map created for the application, this is an essential part of the implementation process before actually immplementing the monitoring strategy. As it helps identify all components and dependancies of the applicaiton that we are building.
+The primary benefits of a service map include:
+
+1. Providing Clarity: Offering a clear and comprehensive view of the service and its components.
+2. Understanding Customer Value: Identifying the capabilities, features, and user journey that deliver value to customers.
+3. Mapping Resource Communication: Visualizing how various resources interact within the service ecosystem.
+4. Defining Policies and Settings: Determining the necessary policies and configurations required for the service's operation.
+5. Establishing Escalation Paths: Documenting escalation processes and contact information for efficient issue resolution.
+
+<img width="538" alt="Screenshot 2024-12-06 at 16 33 55" src="https://github.com/user-attachments/assets/c171962e-6e2c-4cda-82c2-1641604f81ac">
+
+This service mapping represents the architecture of a cloud-based application environment designed for efficient logging, monitoring, and analysis. The system is structured hierarchically, with dependencies flowing from core services to telemetry and analytics, culminating in a visualization layer. The App Service manages both the frontend (static web app) and backend (containerized application). Diagnostic settings act as a centralized logging and telemetry hub, connecting key services such as the container registry, key vault, and database to the telemetry pipeline. Data flows through App Insights for telemetry collection, then to Log Analytics for aggregation, and finally to a workbook for visualization and analysis.
+
+### Core Services
+- **Frontend (Static Web App)**: Hosts the user interface for end users.
+- **Backend (Container)**: Handles business logic and processes, deployed within a containerized environment.
+- **App Service**: Central service managing the frontend and backend.
+
+### Supporting Infrastructure
+- **Container Registry**: Manages container images used by the backend.
+- **Key Vault**: Stores secrets, such as API keys and sensitive configuration data.
+- **Database**: Provides persistent storage for application data.
+
+### Diagnostic Settings
+- Acts as a logging hub, collecting telemetry from:
+  - **Container Registry**
+  - **Key Vault**
+  - **Database**
+- Routes telemetry data to **App Insights**.
+
+### Telemetry and Analytics
+- **App Insights**:
+  - Collects application performance telemetry and logs.
+  - Feeds data into **Log Analytics**.
+- **Log Analytics**:
+  - Aggregates and processes telemetry data for analysis.
+  - Centralized platform for log management.
+
+### Visualization
+- **Workbook**:
+  - Displays aggregated logs and insights for monitoring and decision-making.
+
+
+---
 
 # Implementation of monitoring strategy 
 
@@ -122,7 +169,7 @@ To enable reusable, dynamic, and environment-specific deployments for dev, uat, 
 
 ---
 
-# Step 2: Deployment of Log Analytics Workspace
+## Step 2: Deployment of Log Analytics Workspace
 
 ## Objective:
 To establish a centralized monitoring hub capable of aggregating logs and telemetry data from all deployed resources for unified analysis and troubleshooting.
@@ -148,7 +195,7 @@ To establish a centralized monitoring hub capable of aggregating logs and teleme
 
 ---
 
-# Step 3: Application Insights Integration
+## Step 3: Application Insights Integration
 
 ## Objective:
 To provide end-to-end telemetry for frontend (FE) and backend (BE) services, tracking performance, dependency interactions, and user-facing errors.
@@ -171,7 +218,7 @@ To provide end-to-end telemetry for frontend (FE) and backend (BE) services, tra
 
 ---
 
-# Step 4: Secure Management with Key Vault
+## Step 4: Secure Management with Key Vault
 
 ## Objective:
 To safeguard sensitive information such as database credentials, telemetry connection strings, and Slack Webhook URLs while enabling dynamic access for authorized resources.
@@ -194,7 +241,7 @@ To safeguard sensitive information such as database credentials, telemetry conne
 
 ---
 
-# Step 5: Diagnostic Settings
+## Step 5: Diagnostic Settings
 
 ## Objective:
 To enable granular logging for all key resources, ensuring comprehensive visibility into system behavior and performance.
@@ -219,7 +266,7 @@ To enable granular logging for all key resources, ensuring comprehensive visibil
 
 ---
 
-# Step 6: Workbook Design and Deployment
+## Step 6: Workbook Design and Deployment
 
 ## Objective:
 To visualize system metrics and logs, enabling proactive monitoring and real-time insights into system health.
@@ -247,7 +294,7 @@ To visualize system metrics and logs, enabling proactive monitoring and real-tim
 
 ---
 
-# Conclusion
+## Conclusion
 
 This implementation as an SRE achieved:
 
@@ -256,7 +303,6 @@ This implementation as an SRE achieved:
 - **Proactive Insights**: Automated workbooks for real-time monitoring of key metrics, enabling early detection of anomalies and performance issues.
 
 This approach ensured the reliability, visibility, and operational efficiency of the infrastructure.
-
 
 ---
 
