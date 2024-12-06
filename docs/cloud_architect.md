@@ -354,8 +354,103 @@ Each test is implemented and tracked in Azure DevOps to ensure coverage across b
 
 ---
 
-## 7. Backlog and User Stories
+## 12 Factor App Design
 
-All requirements are broken down into user stories in the Azure DevOps backlog, where they are prioritized for development. This backlog includes links to individual work items, acceptance criteria, and progress tracking.
+The IE Bank system adopts the **12 Factor App principles** to ensure a scalable, maintainable, and modern application architecture. These principles guide the design and implementation of the application, enabling seamless development, deployment, and operation.
 
-- **Azure DevOps Backlog Link**: [Azure DevOps Backlog](https://dev.azure.com/your-org/your-project/_backlogs)
+---
+
+### 1. Codebase
+- **Single Codebase, Multiple Environments**:  
+  The application is maintained in a single code repository, leveraging environment-specific configurations for Development, UAT, and Production.  
+  - **Repository Structure**: Separate branches for features, bug fixes, and releases.
+  - **Source Control**: GitHub repository with strict branch policies.
+
+---
+
+### 2. Dependencies
+- **Explicitly Declare Dependencies**:  
+  All dependencies are explicitly managed using `requirements.txt` for Python (backend) and `package.json` for Vue.js (frontend).  
+  - Dependency management tools: `pip` for backend and `npm` for frontend.
+  - Automated updates: Dependabot integration ensures dependencies remain up-to-date and secure.
+
+---
+
+### 3. Config
+- **Configuration in the Environment**:  
+  Environment-specific configurations are stored securely in **Azure Key Vault** and accessed dynamically using **Managed Identities**.  
+  - Secrets like database credentials, API keys, and connection strings are injected at runtime.
+  - Separation of configurations ensures portability across environments.
+
+---
+
+### 4. Backing Services
+- **Treat Backing Services as Attached Resources**:  
+  Backing services, such as the PostgreSQL database, Azure Container Registry, and Azure Key Vault, are treated as interchangeable resources.  
+  - Services are bound to the application using environment-specific settings.
+
+---
+
+### 5. Build, Release, Run
+- **Strict Separation Between Build and Run Stages**:  
+  - **Build**: GitHub Actions builds Docker images and bundles static assets.
+  - **Release**: Releases are tagged and deployed to UAT for stakeholder validation.
+  - **Run**: Applications are executed in Azure App Services with the latest configuration.
+
+---
+
+### 6. Processes
+- **Execute the App as One or More Stateless Processes**:  
+  The backend (Python/Flask) and frontend (Vue.js) services are stateless, with persistent data stored in PostgreSQL.  
+  - Session data is offloaded to client-side storage or the database.
+
+---
+
+### 7. Port Binding
+- **Export Services via Port Binding**:  
+  - The backend exposes APIs through dynamically assigned ports in Docker containers.
+  - The frontend is served via **Azure Static Web Apps** with HTTPS enabled.
+
+---
+
+### 8. Concurrency
+- **Scale Out via the Process Model**:  
+  - Horizontal scaling is achieved by running multiple instances of backend and frontend services.
+  - Azure App Services auto-scale configurations dynamically adjust to handle traffic spikes.
+
+---
+
+### 9. Disposability
+- **Maximize Robustness with Fast Startup and Graceful Shutdown**:  
+  - Docker containers ensure fast application startup.
+  - Azure App Services implement health probes to detect failures and restart processes as needed.
+
+---
+
+### 10. Dev/Prod Parity
+- **Keep Development, Staging, and Production as Similar as Possible**:  
+  - UAT mimics production configurations to ensure realistic testing.
+  - Feature branching and CI/CD pipelines enforce consistency across environments.
+
+---
+
+### 11. Logs
+- **Treat Logs as Event Streams**:  
+  Logs are centralized using **Azure Log Analytics Workspace**, where application logs, server logs, and metrics are aggregated.  
+  - Real-time monitoring is enabled via Azure Monitor and Application Insights.
+
+---
+
+### 12. Admin Processes
+- **Run Admin/Management Tasks as One-Off Processes**:  
+  Administrative tasks, such as database migrations, are executed through CI/CD pipelines or one-off scripts invoked in Docker containers.
+
+---
+
+### Implementation Summary
+By adhering to the **12 Factor App principles**, the IE Bank system achieves:
+- **Scalability**: Modular design and auto-scaling.
+- **Maintainability**: Simplified configurations and dependency management.
+- **Portability**: Seamless deployments across multiple environments.
+
+This approach ensures that the application remains modern, reliable, and capable of supporting evolving business needs.
