@@ -193,16 +193,134 @@ The backend is built using **Python/Flask**, providing robust APIs and backend f
 ---
 
 ## Twelve-Factor App Principles
-<!-- Briefly discuss alignment with the Twelve-Factor App principles. -->
+
+The IE Bank system adopts the **12 Factor App principles** to ensure a scalable, maintainable, and modern application architecture. These principles guide the design and implementation of the application, enabling seamless development, deployment, and operation.
+
+---
+
+### 1. Codebase
+- **Single Codebase, Multiple Environments**:  
+  The application is maintained in a single code repository, leveraging environment-specific configurations for Development, UAT, and Production.  
+  - **Repository Structure**: Separate branches for features, bug fixes, and releases.
+  - **Source Control**: GitHub repository with strict branch policies.
+
+
+### 2. Dependencies
+- **Explicitly Declare Dependencies**:  
+  All dependencies are explicitly managed using `requirements.txt` for Python (backend) and `package.json` for Vue.js (frontend).  
+  - Dependency management tools: `pip` for backend and `npm` for frontend.
+  - Automated updates: Dependabot integration ensures dependencies remain up-to-date and secure.
+
+
+### 3. Config
+- **Configuration in the Environment**:  
+  Environment-specific configurations are stored securely in **Azure Key Vault** and accessed dynamically using **Managed Identities**.  
+  - Secrets like database credentials, API keys, and connection strings are injected at runtime.
+  - Separation of configurations ensures portability across environments.
+
+
+
+### 4. Backing Services
+- **Treat Backing Services as Attached Resources**:  
+  Backing services, such as the PostgreSQL database, Azure Container Registry, and Azure Key Vault, are treated as interchangeable resources.  
+  - Services are bound to the application using environment-specific settings.
+
+
+
+### 5. Build, Release, Run
+- **Strict Separation Between Build and Run Stages**:  
+  - **Build**: GitHub Actions builds Docker images and bundles static assets.
+  - **Release**: Releases are tagged and deployed to UAT for stakeholder validation.
+  - **Run**: Applications are executed in Azure App Services with the latest configuration.
+
+
+
+### 6. Processes
+- **Execute the App as One or More Stateless Processes**:  
+  The backend (Python/Flask) and frontend (Vue.js) services are stateless, with persistent data stored in PostgreSQL.  
+  - Session data is offloaded to client-side storage or the database.
+
+
+
+### 7. Port Binding
+- **Export Services via Port Binding**:  
+  - The backend exposes APIs through dynamically assigned ports in Docker containers.
+  - The frontend is served via **Azure Static Web Apps** with HTTPS enabled.
+
+
+
+### 8. Concurrency
+- **Scale Out via the Process Model**:  
+  - Horizontal scaling is achieved by running multiple instances of backend and frontend services.
+  - Azure App Services auto-scale configurations dynamically adjust to handle traffic spikes.
+
+
+
+### 9. Disposability
+- **Maximize Robustness with Fast Startup and Graceful Shutdown**:  
+  - Docker containers ensure fast application startup.
+  - Azure App Services implement health probes to detect failures and restart processes as needed.
+
+
+
+### 10. Dev/Prod Parity
+- **Keep Development, Staging, and Production as Similar as Possible**:  
+  - UAT mimics production configurations to ensure realistic testing.
+  - Feature branching and CI/CD pipelines enforce consistency across environments.
+
+
+
+### 11. Logs
+- **Treat Logs as Event Streams**:  
+  Logs are centralized using **Azure Log Analytics Workspace**, where application logs, server logs, and metrics are aggregated.  
+  - Real-time monitoring is enabled via Azure Monitor and Application Insights.
+
+
+
+### 12. Admin Processes
+- **Run Admin/Management Tasks as One-Off Processes**:  
+  Administrative tasks, such as database migrations, are executed through CI/CD pipelines or one-off scripts invoked in Docker containers.
+
+
+
+### Implementation Summary
+By adhering to the **12 Factor App principles**, the IE Bank system achieves:
+- **Scalability**: Modular design and auto-scaling.
+- **Maintainability**: Simplified configurations and dependency management.
+- **Portability**: Seamless deployments across multiple environments.
+
 
 ---
 
 ## Diagrams
 ### Data Flow Diagram
-<!-- Include or describe the data flow diagram. -->
+
+![image](https://github.com/user-attachments/assets/c0da8c07-718d-4a58-9f5b-953d2608d616)
+
 
 ### Entity Relationship Diagram
-<!-- Include or describe the entity relationship diagram. -->
 
-### Use Case Diagram
-<!-- Include or describe the use case diagram. -->
+![image](https://github.com/user-attachments/assets/ffcdd8c2-57b5-438b-b221-9db52fbc93af)
+
+
+### Use Case Diagrams
+
+#### User Registration
+
+![image](https://github.com/user-attachments/assets/3b019588-7c44-4451-8874-263680f1af17)
+
+
+#### User Login
+
+![image](https://github.com/user-attachments/assets/694c632c-4f56-47f5-b1ac-0dadfb490636)
+
+
+#### Deposit
+
+![image](https://github.com/user-attachments/assets/19ef5308-a864-451a-bb75-101f355f22be)
+
+
+#### Transfer
+
+![image](https://github.com/user-attachments/assets/1a350471-9e8c-4045-bc25-9609c02654b5)
+
