@@ -3,6 +3,12 @@
 This section outlines the cloud infrastructure design for the IE Bank system, highlighting the Azure services used, modular infrastructure as code (IaC) approach, and environment-specific configurations.
 
 ---
+## Diagram
+
+![image](https://github.com/user-attachments/assets/dfdfe381-2c00-4f03-9f0c-f839237f6d4e)
+
+
+---
 
 ## Overview of Azure Services
 ### 1 GitHub
