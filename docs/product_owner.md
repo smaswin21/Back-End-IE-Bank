@@ -204,11 +204,53 @@ Everything previously mentioned contributed to implementing the Scrum methodolog
 
 ## Collaboration Strategy
 
-Effective collaboration is crucial for project success. Our strategy includes:
-1. **Regular Communication**: Daily scrums, Slack channels, and email updates.
-2. **Feedback Loops**: Sprint reviews to gather stakeholder feedback.
-3. **Tool Integration**: Azure DevOps for backlog and sprint management, GitHub for code collaboration.
-4. **Cross-Functional Teamwork**: Encourage open discussions between developers, designers, and stakeholders.
+**Connect GitHub with Azure DevOps Boards**
+This help synchronize the repositories with the Azure Boards, here are the steps to do it:
+1. Go to project settings
+2. Go to GitHub connections
+3. Connect to the GitHub account with all the main repositories 
+4. Select the repositories relevant to the Azure Boards (in our cases It was repositories for the backend, frontend and infrastructure)
+
+Connection:
+<img width="1147" alt="Screenshot 2024-12-07 at 14 18 07" src="https://github.com/user-attachments/assets/5f3450ce-f101-4e77-9c03-cd733624fa2c">
+
+
+**Connect Slack with Azure DevOps Boards**
+1. In the apps section on Slack, download Azure DevOps Boards
+2. In the designated Slack channel, log in to the Azure DevOps account with the product backlog 
+3. On setting in Azure Boards, go to Security → Policies → Application connection policies and enable Third-party application access via OAuth
+4. Use /azboards link [Azure Boards Link] to connect the desired Azure Board
+
+**Connect Slack with GitHub**
+1. In the apps section on Slack, download GitHub
+2. In the designated Slack channel, log into the GitHub account with all repositories 
+3. Using this syntax /github subscribe owner/repo, link the repositories 
+4. Validate through entering the code received by email
+5. This helped us keep track of all pushes to main, deployments and changes made to all repositories
+
+**Connect Slack with Zoom**
+1. In the apps section on Slack, download Zoom
+2. Authenticate zoom account by logging in
+
+This was used to schedule and start all the scrum meetings through the command /zoom call.
+
+**Connect Azure with Slack**
+This was needed for sending all the alerts from Azure and the logs to our slack channel, and it was useful when we realized we did something wrong and unnecessary alerts about data leaks were being sent, this was how it was done:
+1. Create logic app on Azure for the alerts
+2. Once alerts are configured choose the option of integration with Slack
+3. In the apps section on Slack, download Azure
+4. Log into the Azure account with the logic app and alerts
+5. Select the resource groups and alerts we want to monitor through Slack
+6. Configure Slack channel to send notification for alerts
+
+Example alerts:
+
+<img width="518" alt="Screenshot 2024-12-07 at 14 19 22" src="https://github.com/user-attachments/assets/9fc5d86c-7918-4604-bac0-73fe6c23eac9">
+
+
+
+All these integrations ensured everything was traced back to the Slack chat, contributing to efficient communication and tracking of all updates from all tools that were utilized. 
+
 
 ---
 
