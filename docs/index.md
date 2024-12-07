@@ -18,65 +18,29 @@ Welcome to the project documentation repository. This documentation is organized
 
 ---
 
-## Project Overview
+## Introduction
 
-Provide a brief description of the project, its objectives, and key functionalities. Link to more detailed documents or diagrams if needed.
+The IE Bank system is a comprehensive digital banking solution designed to empower users with secure, efficient, and user-friendly financial management tools. This document outlines the system’s requirements, architecture, and development strategies, providing a clear roadmap for its implementation and delivery.
 
----
+### Project Overview
 
-## Roles and Responsibilities
+IE Bank aims to revolutionize personal banking for young adults by offering a platform that simplifies financial management while maintaining a strong focus on security and reliability. The system supports a wide range of functionalities, including user authentication, account management, and secure transaction processing. Through innovative use of cloud technologies and DevOps practices, the project strives to deliver a seamless user experience.
 
-Each role has specific responsibilities and tasks. Below is a summary of each role in the project.
+### Objective and Scope
 
-- **Cloud Architect**: Design and manage cloud infrastructure, ensure scalability, and adhere to best practices.
-- **Product Owner**: Define the product vision, manage the backlog, and ensure the product aligns with customer needs.
-- **Full Stack Developer**: Develop and maintain front-end and back-end code, and integrate CI/CD workflows.
-- **Infrastructure Developer**: Manage Infrastructure as Code (IaC) and modularize infrastructure components.
-- **Cybersecurity Engineer**: Ensure data security, configure IAM, and protect resources.
-- **Site Reliability Engineer (SRE)**: Monitor application reliability, manage incident responses, and maintain application uptime and performance.
-- **Quality Assurance Engineer (QA)**: Define test strategies, execute test cases, and maintain overall product quality.
-- **DevOps Engineer**: Oversee CI/CD pipelines, automate workflows, and ensure smooth deployments across environments.
+The primary objective of this project is to deliver a robust banking system that adheres to high standards of reliability, scalability, and security. The scope includes:
+- Development of a user portal for account management and transactions.
+- Implementation of an admin portal for managing user accounts.
+- Integration of security best practices for data protection.
+- Establishing a scalable infrastructure for future growth.
+- Streamlining development and deployment through DevOps automation.
 
----
+### Roles
 
-## Documentation Structure
+This project involves multiple key stakeholders, each contributing to its success:
+- **Product Owner**: Oversees the project vision and defines functional and non-functional requirements. Drives prioritization and alignment with business goals.
+- **Cloud Architect**: Designs and implements the cloud infrastructure, ensuring scalability, reliability, and alignment with Azure best practices.
+- **Infrastructure Developer**: Builds and manages infrastructure components using Infrastructure as Code (IaC). Ensures modularity, reusability, and environment-specific configurations.
+- **Site Reliability Engineer (SRE)**: Monitors and maintains operational stability. Implements logging, monitoring, and alerting strategies to meet SLAs and SLOs.
+- **Cybersecurity Engineer**: Ensures system security by implementing secure practices, managing credentials, and monitoring for vulnerabilities and threats.
 
-Each role should maintain and update documentation in their designated file. This structure enables all team members to document their processes, decisions, and implementations systematically.
-
----
-
-## Getting Started
-
-1. **Cloning the Repository**: Clone this documentation repository to your local machine.
-    ```bash
-    git clone <repository-url>
-    ```
-
-2. **Folder Structure**:
-    - All documentation files should be stored in the `docs/` folder and organized by role.
-    - Diagrams and images should be stored in the `docs/assets` folder with appropriate subfolders for each role.
-
-3. **Editing and Updating**:
-    - Make updates to the relevant role-based markdown file.
-    - Commit changes with clear and descriptive messages.
-    - Push changes and submit a pull request for review if needed.
-
----
-
-## Contributing
-
-1. Follow the file structure and guidelines as defined here.
-2. For each update, add a new section with a clear title and date.
-3. Keep language clear and concise to ensure documentation is accessible to all team members.
-
----
-
-## Additional Resources
-
-- [Azure Well-Architected Framework](https://learn.microsoft.com/en-us/azure/well-architected/)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [12-Factor App Methodology](https://12factor.net/)
-
----
-
-For any questions or issues, please reach out to the project manager.
