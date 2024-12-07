@@ -11,6 +11,7 @@
 - [Sprint Backlog](#sprint-backlog)
 - [Sprint Planning Ceremony](#sprint-planning-ceremony)
 - [Daily Scrum Meetings](#daily-scrum-meetings)
+- [Sprint Retrospective](#sprint-retrospective)
 - [Scrum Methodology](#scrum-methodology)
 - [Collaboration Strategy](#collaboration-strategy)
 
@@ -180,7 +181,7 @@ We had 3 recorded daily scrum meetings, as the rest were conducted in person whi
 ## Daily Scrum Meetings
 
 ### Purpose
-Link for [Daily Scrum Meetings](https://drive.google.com/drive/folders/1MIUTjas9CrbjAQA3bDOTuj3iRrXdAbb6?usp=drive_link) which is found in the Drive-
+Link for [Daily Scrum Meetings](https://drive.google.com/drive/folders/1MIUTjas9CrbjAQA3bDOTuj3iRrXdAbb6?usp=drive_link) which is found in the Drive.
 
 ### Format
 - **Duration**: 15-20 minutes.
@@ -189,6 +190,18 @@ Link for [Daily Scrum Meetings](https://drive.google.com/drive/folders/1MIUTjas9
   2. What are you doing now?
   3. What are you doing next?
   4. Do you have any blockers?
+
+---
+
+## Sprint Retrospective
+
+Link for [Sprint Retrospective](https://drive.google.com/drive/folders/1MIUTjas9CrbjAQA3bDOTuj3iRrXdAbb6?usp=drive_link) which is found on Azure Boards
+
+**Focus**:
+- What went well?
+- What could be improved?
+- Shout out to ...
+
 
 ---
 
