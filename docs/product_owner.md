@@ -193,10 +193,12 @@ Link for [Daily Scrum Meetings](https://drive.google.com/drive/folders/1MIUTjas9
 
 ## Scrum Methodology
 
-Scrum provides an iterative and incremental approach to project management and product delivery. Key principles include:
-- **Transparency**: All work is visible to stakeholders.
-- **Inspection**: Regular reviews of progress ensure alignment.
-- **Adaptation**: Changes are incorporated dynamically.
+Everything previously mentioned contributed to implementing the Scrum methodology in this sprint, these are the following methodologies that were used:
+1.  I ensured we implemented all concepts and principles from the agile methodology for planning and collaborating. This sprint relied on the communication and efficient collaboration between different team members in order to get work down, especially between the infrastructure developer and all other team members to ensure efficient deployment to production.
+2.  A backlog was prepared and continuously refined by me (product owner) throughout the sprint, so that the team members can have a sense of direction and we used the user stories to make sure we are satisfying customer needs and remain user-centric
+3.  Daily scrum meetings were carried out as much as possible and as long as needed so that everyone is updated of the other’s progress, cover any doubts and to make sure everyone is on track at that point in the sprint
+4.  A sprint review was conducted on 29/11 to show what we have completed in this sprint, each team member gave an update, we presented our demo in the UAT environment, discussed technical debt of the sprint and what we aim to complete next. The sprint review also reflected how team collaboration was essential in completing all tasks in this sprint.
+5.  A sprint retrospective was conducted on 4/12 to show what each member believed was done well, what should be improved and shout outs. The general consensus showed that our strongest factor was the team dynamic and collaboration. Each team member however saw ways in which they can contribute improvements to the next sprint. As for the shout outs, it can be clearly seen how in a way each member was thankful for the help of almost everyone.
 
 ---
 
