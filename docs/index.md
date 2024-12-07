@@ -1,6 +1,6 @@
 # Project Documentation
 
-Welcome to the project documentation repository. This documentation is organized by role and topic to ensure that each team member can easily find and contribute to the information relevant to their tasks. Please follow the structure below to document and update your contributions.
+Welcome to the Money404notfound documentation. Navigate through the different sections to learn more about the product.
 
 ## Sections
 
