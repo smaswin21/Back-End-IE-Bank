@@ -20,7 +20,7 @@
 
 ### Product Vision
 
-To revolutionize personal banking by providing a secure and user-centric digital platform that empowers young adults or students to manage their finances and helps achieve their financial goals
+Empowering young adults with secure, user-friendly banking to achieve financial goals.
 
 
 ### Product Mission
