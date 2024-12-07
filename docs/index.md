@@ -2,19 +2,38 @@
 
 Welcome to the project documentation repository. This documentation is organized by role and topic to ensure that each team member can easily find and contribute to the information relevant to their tasks. Please follow the structure below to document and update your contributions.
 
-## Table of Contents
+## Sections
 
-- [Project Overview](#project-overview)
-- [Roles and Responsibilities](#roles-and-responsibilities)
-- [Documentation Structure](#documentation-structure)
-  - [Cloud Architect](/cloud_architect.md)
-  - [Product Owner](/product_owner.md)
-  - [Full Stack Developer](/full_stack_developer.md)
-  - [Infrastructure Developer](/infrastructure_developer.md)
-  - [Cybersecurity Engineer](/cybersecurity_engineer.md)
-  - [Site Reliability Engineer (SRE)](/sre.md)
-  - [Quality Assurance Engineer (QA)](/qa_engineer.md)
-  - [DevOps Engineer](/devops_engineer.md)
+1. **[Product Vision and Mission](visionmission.md)**  
+   Defines the vision, mission, and objectives of the project.
+
+2. **[Functional and Non-Functional Requirements](requirements.md)**  
+   Outlines the functional and non-functional requirements of the system.
+
+3. **[DevOps Practices](devops_practices.md)**  
+   Details the DevOps methodologies, tools, and workflows adopted.
+
+4. **[Software Architecture](software_architecture.md)**  
+   Describes the architectural patterns, application design, and diagrams.
+
+5. **[Infrastructure Architecture](infrastructure_architecture.md)**  
+   Provides details on cloud infrastructure design, services, and environment configurations.
+
+6. **[Release Strategy](release_strategy.md)**  
+   Explains the CI/CD pipelines, branching strategies, and deployment workflows.
+
+7. **[Security Framework](security_framework.md)**  
+   Covers security principles, tools, and incident response strategies.
+
+8. **[Collaboration Tools and Integration](collaboration.md)**  
+   Highlights tools used for team collaboration and their integrations.
+
+9. **[Monitoring and Incident Response](monitoring.md)**  
+   Describes monitoring strategies, incident detection, and resolution workflows.
+
+10. **[Cost Optimization](cost_optimization.md)**  
+    Details strategies for managing and optimizing costs.
+
 
 ---
 
