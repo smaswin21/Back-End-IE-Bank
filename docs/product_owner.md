@@ -148,11 +148,15 @@ This allows users to access their account management portals, and allows them to
 
 Link for [Product Backlog](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_backlogs/backlog/Software-Development-and-Devops-Assignment%20Team/Epics) on Azure DevOps Boards.
 
+The product backlog was organized into 6 sections, each epics representing the different roles in our team for this sprint. Planning and Strategy is for the product owner, Architecture Design and Planning for the cloud architect, Implement Core Banking Features For MVP is a focus for the full stack developers, Establish Robust Infrastructure for CI/CD and Hosting is for the full stack developers and the infrastructure developers, Implementing Advanced Strategies for the cyber security engineer and Implementing Monitoring Strategy and Reliability for the site reliability engineer. Each epic is broken down into features, user stories and tasks so that each member can achieve their roles efficiently.
+
 ---
 
 ## Product Roadmap
 
 Link for [Product Roadmap](https://github.com/users/talineshawwaa/projects/3/views/4)
+
+The product roadmap focuses on how our next 4 fiscal quarters are going to look like. The first quarter (the one we are in) focuses on getting the app up and running, setting up security and monitoring strategies and implementing CI/CD. The first and second quarters also focus on deploying to production and ensuring all features of the app are working. The third and fourth quarters focus on receiving feedback from the users, making the app better and more user friendly, and start marketing it to the users to compete with bigger competitors in the market and stand out to new potential users.
 
 ---
 
@@ -160,33 +164,30 @@ Link for [Product Roadmap](https://github.com/users/talineshawwaa/projects/3/vie
 
 Link for [Sprint Backlog](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_sprints/backlog/Software-Development-and-Devops-Assignment%20Team/Software-Development-and-Devops-Assignment/Sprint%201) on Azure DevOps Boards
 
+This link contains all the user stories and tasks for each feature based on the epics in the product backlog. These user stories were written from the perspective of the users and the developers, depending on the user story. It was associated with an acceptance criteria and list of tasks so that it meets user needs and the team can perform tasks efficiently.
+
 ---
 
 ## Sprint Planning Ceremony
 
-### Objectives
-- Define sprint goals and backlog items.
-- Estimate effort and assign tasks to the team.
-- Ensure alignment with the product vision and roadmap.
+Link for [Sprint Planning Ceremony](https://drive.google.com/drive/folders/1MIUTjas9CrbjAQA3bDOTuj3iRrXdAbb6?usp=drive_link) which is the first video in the file.
 
-### Key Activities
-1. Review prioritized backlog items.
-2. Break down user stories into actionable tasks.
-3. Confirm team capacity and commitment.
+We had 3 recorded daily scrum meetings, as the rest were conducted in person which was a bit difficult. Each meeting focused on discussing what everyone has accomplished since our last meeting, what they are doing right now and what they are going to do next. Also in such meetings we tried to cover any concerns and ask each other questions because the success of this project relies on heavy collaboration. In the video Scrum meeting 1, we performed the sprint planning and backlog refinement to make sure that everyone fully understood the backlog and how to use it. Also, I continuously updated the backlog for refinements and when I receive feedback I update the backlog so it aligns as much as possible with our sprint.
 
 ---
 
 ## Daily Scrum Meetings
 
 ### Purpose
-To provide a quick update on progress, identify blockers, and ensure alignment toward sprint goals.
+Link for [Daily Scrum Meetings](https://drive.google.com/drive/folders/1MIUTjas9CrbjAQA3bDOTuj3iRrXdAbb6?usp=drive_link) which is found in the Drive-
 
 ### Format
-- **Duration**: 15 minutes.
+- **Duration**: 15-20 minutes.
 - **Focus**:
-  1. What did you accomplish yesterday?
-  2. What will you do today?
-  3. Are there any blockers?
+  1. What have you achieved so far?
+  2. What are you doing now?
+  3. What are you doing next?
+  4. Do you have any blockers?
 
 ---
 
