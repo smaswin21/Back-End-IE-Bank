@@ -1,10 +1,10 @@
 # Product Vision and Mission
 
 ### Subsections
-- [Vision Statement](vision-statement.md)
-- [Mission Statement](mission-statement.md)
-- [Objectives and Key Results (OKRs)](objectives-and-key-results.md)
-- [Product Vision Board](product-vision-board.md)
+- [Vision Statement](#vision-statement)
+- [Mission Statement](#mission-statement)
+- [Objectives and Key Results (OKRs)](#objectives-and-key-results)
+- [Product Vision Board](#product-vision-board)
 
 ---
 
