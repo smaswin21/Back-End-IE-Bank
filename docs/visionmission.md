@@ -4,7 +4,7 @@
 - [Vision Statement](vision-statement.md)
 - [Mission Statement](mission-statement.md)
 - [Objectives and Key Results (OKRs)](objectives-and-key-results.md)
-- [Product Vision Board (Optional)](product-vision-board.md)
+- [Product Vision Board](product-vision-board.md)
 
 ---
 
@@ -74,7 +74,7 @@ Our MVP setup consists of the functional requirements, primarily the admin porta
 
 In general, IE bank is a fin-tech startup that is working on a bank management app for young adults who are looking for an easy and user-friendly app that allows them to manage their financial needs. IE bank provides a new digital experience for its customers due to its convenience and secure ways for users to manage their bank accounts, transfer money, pay bills and view all transactions. 
 
-The following are the features that the business analysts wants to implement in the next phase of the app development.
+
 
 ---
 ## Product Vision Board 
