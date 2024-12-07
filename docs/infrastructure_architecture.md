@@ -141,7 +141,7 @@ This section outlines the cloud infrastructure design for the IE Bank system, hi
      - Provides visualized data for operational decision-making.
 
 
-## 2.10 Workbook
+### 2.10 Workbook
 
 - **Purpose**:
   - Provides real-time visualization of key application metrics and logs for enhanced monitoring and insights.
