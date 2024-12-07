@@ -66,10 +66,17 @@ IE Bank is a platform that aims to deliver accessible, reliable and secure banki
 4. Maintain a rate of 90% task completion rate for every sprint backlog 
 5. Ensure at least 3 peer reviews for every pull request before merging and to ensure all changes are contributing to the application
 
-
-
 ---
 
+## Minimum Viable Product (MVP)
+
+Our MVP setup consists of the functional requirements, primarily the admin portal and the user portal, non-functional requirements, including the authentication, user interface and security compliance, as well as all the development practices that will be implemented in our journey.
+
+In general, IE bank is a fin-tech startup that is working on a bank management app for young adults who are looking for an easy and user-friendly app that allows them to manage their financial needs. IE bank provides a new digital experience for its customers due to its convenience and secure ways for users to manage their bank accounts, transfer money, pay bills and view all transactions. 
+
+The following are the features that the business analysts wants to implement in the next phase of the app development.
+
+---
 ## Product Vision Board 
 
 ![WhatsApp Image 2024-12-07 at 12 47 00_ec0bbf75](https://github.com/user-attachments/assets/853bf44b-95fb-4c72-8826-f2a74646fa38)
