@@ -34,6 +34,9 @@ Welcome to the project documentation repository. This documentation is organized
 10. **[Cost Optimization](cost_optimization.md)**  
     Details strategies for managing and optimizing costs.
 
+11. **[Team Organization](team_organization.md)**  
+    Details strategies for managing and optimizing costs.
+
 
 ---
 
