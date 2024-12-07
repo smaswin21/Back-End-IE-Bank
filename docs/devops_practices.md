@@ -106,8 +106,17 @@ To enhance reusability and consistency:
 
 ---
 
-### Infrastructure as Code (IaC)
-<!-- Use of tools like Azure Bicep to automate infrastructure -->
+## Infrastructure as Code (IaC)
+
+- The project uses Azure Bicep for declarative and modular infrastructure definitions.
+- Modularization enables reusability and flexibility, with separate modules for core resources like App Services, Key Vault, Azure Container Registry (ACR), and PostgreSQL.
+- Parameter files differentiate configurations per environment (e.g., resource naming conventions, SKUs, and access controls).
+
+### Code Management
+
+- **Version Control:** All Bicep files are stored in a Git repository with proper Git strategies to manage changes effectively.
+- **Code Reviews:** Mandatory pull request reviews to ensure code quality and adherence to standards.
+- **Template Validation:** Automated checks to validate Bicep templates for syntax and compliance before deployment.
 
 ---
 
