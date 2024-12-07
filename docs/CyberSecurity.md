@@ -1,6 +1,4 @@
-# GitHub Hardening Strategy Documentation
-## IE Bank System GitHub Security Design Document
-
+# IE Bank System GitHub Security Design Document
 ### Introduction
 This document outlines the GitHub security strategy implemented for IE Bank System. The goal is to secure the GitHub environment to develop safe code and prevent unauthorized access to deployment workflows. This strategy includes advanced GitHub security features, dependency management, code scanning, and secrets management.
 
@@ -43,16 +41,47 @@ This document outlines the GitHub security strategy implemented for IE Bank Syst
 ### 2. Secure Secrets Management
 
 #### 2.1 Container Registry Credentials
-**Description:** Secured container registry credentials using Azure Key Vault. These credentials are accessible via managed identities in Azure Bicep workflows.
-- **Bicep File Link:** [Container Registry Credentials Bicep](#)
+**Description:** Container Registry credentials are securely managed using **Azure Key Vault** and accessed through **Managed Identities** in Azure Bicep workflows. This approach ensures robust security and simplifies credential management.
+
+**Key Features:**
+- **Centralized Secret Storage:** Azure Key Vault securely stores credentials for the Azure Container Registry (ACR), reducing the risk of exposure.
+- **Access Control:** Role-Based Access Control (RBAC) is employed to restrict access to the credentials, ensuring that only authorized services and users can retrieve them.
+- **CI/CD Integration:** The Azure Container Registry integrates seamlessly with GitHub Actions, automating image builds and deployments triggered by updates to the repository.
+- **Dynamic Credential Injection:** App Services fetch credentials dynamically from Azure Key Vault during runtime, eliminating hardcoded secrets.
+
+**Security Considerations:**
+- Credentials are encrypted both at rest and in transit using Azure’s secure protocols.
+- Admin credentials are rotated periodically and tracked in Key Vault’s audit logs.
 
 #### 2.2 PostgreSQL Server Credentials
-**Description:** Protected PostgreSQL credentials in Azure Key Vault with role-based access control and managed identity.
-- **Bicep File Link:** [PostgreSQL Credentials Bicep](#)
+**Description:** PostgreSQL Server credentials are protected using **Azure Key Vault** and accessed via **Managed Identities**. This ensures the secure handling of sensitive information, such as database connection strings.
 
-#### 2.3 Documentation
-**Description:** Worked with the Cloud Architect and development teams to document the secrets management strategy.
-- **Documentation Link:** [Secrets Management Design Section](#)
+**Key Features:**
+- **Data Security:** Enforced encryption at rest and in transit for all PostgreSQL server credentials, ensuring compliance with security standards.
+- **Role-Based Access Control (RBAC):** Azure Key Vault manages access to database credentials, allowing only authorized services or applications to retrieve them.
+- **Integration with Azure Services:** Credentials are dynamically injected into environment variables of App Services and other consuming applications.
+- **Disaster Recovery:** The PostgreSQL database is deployed with geo-redundancy, ensuring credential accessibility even during regional outages.
+
+**Performance and Redundancy:**
+- Credentials are optimized for high-read and write-throughput environments, minimizing delays in concurrent queries.
+- SLA-backed availability (e.g., 99.99%) guarantees uptime and access reliability.
+
+**Security Enhancements:**
+- Admin credentials are stored securely in Azure Key Vault and rotated according to organizational policies.
+- Connection strings are encrypted and retrieved only during runtime, preventing hardcoding in application code.
+
+#### 2.3 Azure Key Vault Overview
+**Description:** Azure Key Vault serves as the central secret management solution for both Container Registry and PostgreSQL credentials. It provides secure, centralized storage and dynamic access control.
+
+**Key Features:**
+- **Unified Secret Management:** Centralized storage of sensitive information, including API keys, connection strings, and credentials for both the PostgreSQL database and the Container Registry.
+- **Seamless Integration:** Works seamlessly with Azure App Services, Azure Container Registry, and other Azure resources for secure configuration management.
+- **Audit and Monitoring:** Comprehensive logging of access to secrets, enabling detailed audit trails for compliance purposes.
+- **RBAC Enforcement:** Role-based access control ensures that secrets are only accessible to authorized users and services.
+
+By leveraging Azure Key Vault and integrating it with Managed Identities, the IE Bank System ensures a robust and secure approach to secrets management across all environments.
+"""
+
 
 ---
 
@@ -89,7 +118,7 @@ To enhance secure development practices, the following SAFECode principles were 
    - Centralized logs in Azure Log Analytics for security and performance monitoring.
 
 3. **Establish Coding Standards and Conventions:**
-   - Adopted secure coding standards for both Python (PEP-8 with security extensions) and Vue.js.
+   - Adopted secure coding standards for both Python (PEP-8 with security extensions) and Vue.js, ensuring consistent, maintainable, and secure code. Security extensions include input validation, secure error handling, and the use of linting tools to enforce these standards automatically during development.
   
 4. **Use Code Analysis Tools to Find Security Vulnerabilities:**
    - Integrated CodeQL for semantic code analysis and regular scans.
