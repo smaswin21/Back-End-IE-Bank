@@ -3,7 +3,7 @@
 ### Subsections
 - [Vision Statement](#vision-statement)
 - [Mission Statement](#mission-statement)
-- [Objectives and Key Results (OKRs)](#objectives-and-key-results)
+- [Objectives and Key Results (OKRs)](#objectives-and-key-results-(okrs))
 - [Product Vision Board](#product-vision-board)
 
 ---
