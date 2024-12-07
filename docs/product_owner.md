@@ -31,7 +31,8 @@ IE Bank is a platform that aims to deliver accessible, reliable and secure banki
 
 ## Product Vision Board
 
-![Product Vision Board](images/Product-Vision-Board-Extended%20(dragged).png)
+<img width="1129" alt="Screenshot 2024-12-07 at 14 20 16" src="https://github.com/user-attachments/assets/1a2562da-91b7-4aa0-b26d-2475f61d61e0">
+
 
 ---
 
