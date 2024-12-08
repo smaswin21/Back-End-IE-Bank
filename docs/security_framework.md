@@ -4,8 +4,6 @@
 
 ### Secret Scanning
 **Description:** Configured GitHub Secret Scanning to detect and prevent accidental inclusion of sensitive information (e.g., API keys, passwords) in repositories.
-- **Configuration Link:** [Secret Scanning Configuration](#)
-- **Analysis Link:** [Secret Scanning Alerts](#)
 
 ### Push Protection
 **Description:** Enabled push protection to block contributors from pushing secrets to repositories. Configured alerts for bypassed blocks.
@@ -13,13 +11,9 @@
 
 ### CodeQL Implementation
 **Description:** Integrated CodeQL for semantic code analysis of both frontend (Vue.js) and backend (Python) application code.
-- **CodeQL Workflow Link:** [CodeQL Workflow](#)
-- **CodeQL Analysis Link:** [CodeQL Analysis Run](#)
 
 ### OSSF Scorecard
 **Description:** Implemented OSSF Scorecard to evaluate and improve security best practices within repositories.
-- **Workflow Link:** [OSSF Scorecard Workflow](#)
-- **Analysis Link:** [OSSF Scorecard Analysis](#)
 
 ### Dependabot
 **Description:** Enabled Dependabot to ensure references to actions and reusable workflows remain up-to-date.
@@ -30,7 +24,6 @@
 
 ### CODEOWNERS
 **Description:** Established a CODEOWNERS file to monitor and control code changes effectively by assigning ownership to specific files and directories. Full-stack is allowed in Back-end and Front-end repositories, whilst cloud-architect is allowed in Infra, where the owner of the repos has the final say.
-- **CODEOWNERS File Link:** [CODEOWNERS](#)
 
 ---
 
