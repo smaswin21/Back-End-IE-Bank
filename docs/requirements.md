@@ -16,20 +16,26 @@ This allows bank administrators to access, manage, and control users’ accounts
    - Create new users
    - Update existing user details
    - Delete users and their passwords.
-
+[**User story**](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_workitems/edit/163/) 
 ### User Portal - Bank Account Management System
 
 This allows users to access their account management portals and associate more than one bank account with their user profile. This consists of the following features:
 
 1. New users can register on IE Bank by filling out a form containing their username, password, and confirmation of their password. When a new user is registered, a new account will be provided by default with a random account number.
+[**User story:**](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_workitems/edit/170/) 
+
 2. Users can log in to the application using their username and password. Once login is successful, they can only view their own:
    - Bank accounts
    - Transaction details
+[**User story:**](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_workitems/edit/173/) 
+
 3. Users can perform transactions, primarily transferring money to another account. This is done by entering the:
    - Recipient’s account number
    - Amount to be transferred
-4. The amount transferred by the sender cannot exceed the available balance in their account.
+[**User story:** ](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_workitems/edit/176/)
 
+4. Users will be able to create accounts to manage their funds.
+[**User story:** ](https://dev.azure.com/tshawwa/Software-Development-and-Devops-Assignment/_workitems/edit/437/)
 ---
 
 ## Non-Functional Requirements
