@@ -64,7 +64,7 @@ IE Bank is a platform that aims to deliver accessible, reliable and secure banki
 2. Document 15 user stores with the appropriate acceptance criteria for each member
 3. Complete two sprint retrospectives to gather feedback and improve workflows as needed
 4. Maintain a rate of 90% task completion rate for every sprint backlog 
-5. Ensure at least 3 peer reviews for every pull request before merging and to ensure all changes are contributing to the application
+5. Ensure at least 1 peer review for every pull request before merging and to ensure all changes are contributing to the application
 
 ---
 
