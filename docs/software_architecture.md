@@ -245,10 +245,6 @@ The system adopts a traditional **three-layered architecture** to separate conce
    - Uses **Azure PostgreSQL** as the database for persistent storage.
    - Ensures efficient data querying and maintains integrity for user and transaction records.
 
-### Event-Driven Architecture (Optional)
-
-- Future-proofing the system by planning for an **event-driven approach** using Azure Event Grid for asynchronous communication.
-- Allows for decoupled event producers (e.g., transactions) and consumers (e.g., audit logging or notification services).
 
 ### Resilience and Fault Tolerance
 
